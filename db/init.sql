@@ -1,15 +1,18 @@
-create table c2s (
-                     id      bigint generated always as identity,
+create schema lober;
+
+create table lober.c2s (
+                     id      serial primary key,
                      name    varchar(32)
 );
-create table scope(
-                      id      bigint generated always as identity,
+create table lober.scope (
+                      id      serial primary key,
                       name    varchar(32)
 );
-create table logs(
-                     id          bigint generated always as identity,
+create table lober.events (
+                     id          serial primary key,
                      name        varchar(32),
                      command_run varchar(256),
-                     c2_id       bigint,
-                     scope_id    bigint
+                     c2_id       serial,
+                     scope_id    serial,
+                     time        timestamp default current_timestamp
 );
