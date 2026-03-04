@@ -1,7 +1,7 @@
 FROM golang:1.25-alpine3.22 AS builder
 WORKDIR /app
 COPY go.mod go.sum ./
-RUN go mod download && go mod verif
+RUN go mod download && go mod verify
 COPY . /app/
 RUN --mount=type=cache,target="/root/.cache/go-build" \
 	go build -o server main.go
