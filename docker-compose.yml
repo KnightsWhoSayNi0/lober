@@ -7,16 +7,27 @@ services:
       - 8080:8080
       - 8443:8443
     restart: unless-stopped
+    networks:
+      - lober
   
   db:
     image: postgres
     restart: unless-stopped
+    ports:
+      - 15432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    networks:
+      - lober
     environment:
       - POSTGRES_USER=lober
       - POSTGRES_PASSWORD=lober
       - POSTGRES_DB=lober
-    volumes:
-      - pgdata:/var/lib/postgresql
 
 volumes:
   pgdata:
+
+networks:
+  lober:
+    driver: bridge
