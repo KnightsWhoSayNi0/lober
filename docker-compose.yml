@@ -9,6 +9,13 @@ services:
     restart: unless-stopped
     networks:
       - lober
+    environment:
+      - PORT=8080
+      - PGHOST=db
+      - PGDATABASE=lober
+      - PGUSER=lober
+      - PGPASSWORD=lober
+      - PGSSLMODE=disable
   
   db:
     image: postgres
