@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>lober</title>
+    <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+    <h1>lober</h1>
+
+    <div class="logs">
+        <table>
+            <tr>
+                <th>Command</th>
+                <th>User</th>
+                <th>C2</th>
+                <th>Scope</th>
+                <th>Time</th>
+            </tr>
+            {{ range.events }}
+            <div class="event">
+                <tr>
+                    <td>{{ .Command }}</td>
+                    <td>{{ .User }}</td>
+                    <td>{{ .C2 }}</td>
+                    <td>{{ .Scope }}</td>
+                    <td>{{ .Time }}</td>
+                </tr>
+            </div>
+            {{ end }}
+        </table>
+    </div>
+    <hr>
+    <img src="assets/imgs/lober.gif">
+</body>
+</html>

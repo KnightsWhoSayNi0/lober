@@ -37,10 +37,43 @@ func init() {
 func main() {
 	router := gin.Default()
 
+	// api endpoints
 	router.GET("/events", getEvents)
 	router.POST("/events", newEvent)
 
+	// web pages
+	router.Static("/assets", "./assets")
+	router.GET("/", indexHandler)
+	router.LoadHTMLGlob("templates/*")
+
 	router.Run()
+}
+
+func indexHandler(c *gin.Context) {
+	rows, err := db.Query("select * from events")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	defer rows.Close()
+
+	events := make([]Event, 0)
+	for rows.Next() {
+		var e Event
+		x, y, z := 0, 0, 0
+		if err := rows.Scan(&e.ID, &e.Command, &x, &y, &z, &e.Time); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		getUsername(x, &e.User)
+		getC2Name(y, &e.C2)
+		getScopeName(z, &e.Scope)
+		events = append(events, e)
+	}
+
+	c.HTML(http.StatusOK, "index.html", gin.H{
+		"events": events,
+	})
 }
 
 func getEvents(c *gin.Context) {
