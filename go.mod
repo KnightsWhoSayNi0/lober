@@ -1,4 +1,4 @@
-module lober
+module github.com/KnightsWhoSayNi0/lober
 
 go 1.25.7
 

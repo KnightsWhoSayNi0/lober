@@ -2,23 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>lober</title>
+    <title>lober logs</title>
     <link rel="stylesheet" href="assets/css/app.css">
 </head>
 <body>
-    <h1>lober</h1>
+    <div class="menu">
+        <h1>Lober</h1>
+        <ul>
+            <li><a class="active" href="/">Home</a></li>
+            <li><a href="users">Users</a></li>
+            <li><a href="teams">Teams</a></li>
+            <li><a href="c2s">C2s</a></li>
+            <li><a href="scope">Scope</a></li>
+            <li><a href="config">Config</a></li>
+        </ul>
+        <img src="assets/imgs/lober.gif">
+    </div>
+    <div class="contents">
+        <h1>Log Flow</h1>
 
-    <div class="logs">
-        <table>
-            <tr>
-                <th>Command</th>
-                <th>User</th>
-                <th>C2</th>
-                <th>Scope</th>
-                <th>Time</th>
-            </tr>
-            {{ range.events }}
-            <div class="event">
+        <div class="logs">
+            <table>
+                <tr>
+                    <th>Command</th>
+                    <th>User</th>
+                    <th>C2</th>
+                    <th>Scope</th>
+                    <th>Time</th>
+                </tr>
+                {{ range.events }}
                 <tr>
                     <td>{{ .Command }}</td>
                     <td>{{ .User }}</td>
@@ -26,11 +38,9 @@
                     <td>{{ .Scope }}</td>
                     <td>{{ .Time }}</td>
                 </tr>
-            </div>
-            {{ end }}
-        </table>
+                {{ end }}
+            </table>
+        </div>
     </div>
-    <hr>
-    <img src="assets/imgs/lober.gif">
 </body>
 </html>

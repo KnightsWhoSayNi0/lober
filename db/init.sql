@@ -4,7 +4,7 @@ create table lober.users (
     id          serial primary key,
     username    varchar(32),
     email       varchar(32),
-    team_id     serial
+    team_id     serial /* todo; users can be on multiple teams */
 );
 create table lober.teams (
     id          serial primary key,

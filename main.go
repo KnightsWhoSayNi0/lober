@@ -7,19 +7,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/KnightsWhoSayNi/lober/db"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 )
-
-type Event struct {
-	ID      int64
-	Command string    `json:"command"`
-	User    string    `json:"user"`
-	C2      string    `json:"c2"`
-	Scope   string    `json:"scope"`
-	Time    time.Time `json:"time"`
-}
 
 var db *sql.DB
 var err error
@@ -44,67 +35,14 @@ func main() {
 	// web pages
 	router.Static("/assets", "./assets")
 	router.GET("/", indexHandler)
+	router.GET("/users", usersHandler)
 	router.LoadHTMLGlob("templates/*")
 
 	router.Run()
 }
 
-func indexHandler(c *gin.Context) {
-	rows, err := db.Query("select * from events")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-	defer rows.Close()
-
-	events := make([]Event, 0)
-	for rows.Next() {
-		var e Event
-		x, y, z := 0, 0, 0
-		if err := rows.Scan(&e.ID, &e.Command, &x, &y, &z, &e.Time); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		getUsername(x, &e.User)
-		getC2Name(y, &e.C2)
-		getScopeName(z, &e.Scope)
-		events = append(events, e)
-	}
-
-	c.HTML(http.StatusOK, "index.html", gin.H{
-		"events": events,
-	})
-}
-
 func getEvents(c *gin.Context) {
-	rows, err := db.Query("select * from events")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-	defer rows.Close()
-
-	events := make([]Event, 0)
-
-	for rows.Next() {
-		var e Event
-		x, y, z := 0, 0, 0
-		if err := rows.Scan(&e.ID, &e.Command, &x, &y, &z, &e.Time); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		getUsername(x, &e.User)
-		getC2Name(y, &e.C2)
-		getScopeName(z, &e.Scope)
-		fmt.Printf("%s ran by %s using %s on %s at %s\n", e.Command, e.User, e.C2, e.Scope, e.Time)
-		events = append(events, e)
-	}
-
-	if err = rows.Err(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, events)
+	c.JSON(http.StatusOK, getEventsSlice(c))
 }
 
 func newEvent(c *gin.Context) {
@@ -133,6 +71,18 @@ func newEvent(c *gin.Context) {
 	c.JSON(http.StatusOK, event)
 }
 
+func indexHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.html", gin.H{
+		"events": getEventsSlice(c),
+	})
+}
+
+func usersHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "users.html", gin.H{
+		"users": getUsersSlice(c),
+	})
+}
+
 func getUserId(username string, ptr *int) {
 	db.QueryRow("select id from users where username = $1", username).Scan(ptr)
 }
@@ -143,12 +93,43 @@ func getScopeId(scope string, ptr *int) {
 	db.QueryRow("select id from scope where name = $1", scope).Scan(ptr)
 }
 
-func getUsername(id int, ptr *string) {
-	db.QueryRow("select username from users where id = $1", id).Scan(ptr)
+func getEventsSlice(c *gin.Context) []Event {
+	rows, err := db.Query("select events.command, users.username, c2s.name, scope.name, events.time from events inner join users on events.user_id=users.id inner join c2s on events.c2_id=c2s.id inner join scope on events.scope_id=scope.id order by events.time desc;")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	defer rows.Close()
+
+	events := make([]Event, 0)
+	for rows.Next() {
+		var e Event
+		if err := rows.Scan(&e.Command, &e.User, &e.C2, &e.Scope, &e.Time); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return nil
+		}
+		events = append(events, e)
+	}
+
+	return events
 }
-func getC2Name(id int, ptr *string) {
-	db.QueryRow("select name from c2s where id = $1", id).Scan(ptr)
-}
-func getScopeName(id int, ptr *string) {
-	db.QueryRow("select name from scope where id = $1", id).Scan(ptr)
+
+func getUsersSlice(c *gin.Context) []User {
+	rows, err := db.Query("select users.username, users.email, teams.name from users inner join teams on users.team_id=teams.id;")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	defer rows.Close()
+
+	users := make([]User, 0)
+	for rows.Next() {
+		var u User
+		if err := rows.Scan(&u.Username, &u.Email, &u.Team); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return nil
+		}
+
+		users = append(users, u)
+	}
+
+	return users
 }

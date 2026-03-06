@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>lober users</title>
+    <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+    <div class="menu">
+        <h1>Lober</h1>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a class="active" href="users">Users</a></li>
+            <li><a href="teams">Teams</a></li>
+            <li><a href="c2s">C2s</a></li>
+            <li><a href="scope">Scope</a></li>
+            <li><a href="config">Config</a></li>
+        </ul>
+        <img src="assets/imgs/lober.gif">
+    </div>
+    <div class="contents">
+        <h1>Users</h1>
+
+        <button type="user-add">Add User</button>
+
+        <div class="logs">
+            <table>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Team</th>
+                    <th>Actions</th>
+                </tr>
+                {{ range.users }}
+                <tr>
+                    <td>{{ .Username }}</td>
+                    <td>{{ .Email }}</td>
+                    <td>{{ .Team }}</td>
+                    <td>
+                        <button type="user-edit-{{ .Username }}">Edit</button>
+                        <button type="user-show={{ .Username }}">Shows Logs</button>
+                    </td>
+                </tr>
+                {{ end }}
+            </table>
+        </div>
+    </div>
+</body>
+</html>

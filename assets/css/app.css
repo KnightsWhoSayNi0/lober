@@ -12,4 +12,49 @@ table {
 
 th, td {
     padding: 4px;
+    text-align: left;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+div.menu {
+    margin: 0;
+    padding: 4px;
+    width: 200px;
+    background-color: #f1f1f1;
+    height: 100%;
+    position: fixed;
+    overflow: auto;
+}
+
+div.menu ul {
+    list-style-type: none;
+}
+
+div.menu li a {
+    display: block;
+    color: black;
+    padding: 8px 16px;
+    text-decoration: none;
+}
+
+div.menu li a:hover {
+    background-color: #555555;
+    color: white;
+}
+
+.active {
+    background-color: #d36f60;
+    color: white;
+}
+
+div.menu img {
+    margin-bottom: 4px;
+    width: 100%;
+}
+
+div.contents {
+    margin-left: 250px;
 }
