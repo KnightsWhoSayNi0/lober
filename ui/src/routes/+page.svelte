@@ -8,11 +8,11 @@
     <table>
         <thead>
             <tr>
-                <th>command</th>
-                <th>user</th>
-                <th>c2</th>
-                <th>scope</th>
-                <th>time</th>
+                <th>Command</th>
+                <th>User</th>
+                <th>C2</th>
+                <th>Scope</th>
+                <th>Time</th>
             </tr>
         </thead>
         <tbody>

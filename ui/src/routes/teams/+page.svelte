@@ -1,25 +1,25 @@
 <script lang="ts">
-    const { data } = $props<{ data: { users: Array<{ username: string; email: string; team: string }> }}>();
+    const { data } = $props<{ data: { teams: Array<{ name: string; color: string; lead: string }> }}>();
 </script>
 
-<h1>Users</h1>
+<h1>Teams</h1>
 
-{#if data.users.length > 0}
+{#if data.teams.length > 0}
     <table>
         <thead>
             <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Team</th>
+                <th>Name</th>
+                <th>Color</th>
+                <th>Lead</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            {#each data.users as user}
+            {#each data.teams as team}
                 <tr>
-                    <td><a href="/users/{user.username}">{user.username}</a></td>
-                    <td>{user.email}</td>
-                    <td>{user.team}</td>
+                    <td>{team.name}</td>
+                    <td style="background-color: #{team.color};"></td>
+                    <td><a href="/users/{team.lead}">{team.lead}</a></td>
                     <td>
                         <button>Edit</button>
                         <button>Show Logs</button>
@@ -29,7 +29,7 @@
         </tbody>
     </table>
 {:else}
-    <p>No users available yet.</p>
+    <p>No teams available yet.</p>
 {/if}
 
 <style>

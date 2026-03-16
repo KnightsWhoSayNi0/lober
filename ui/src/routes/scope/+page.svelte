@@ -1,25 +1,21 @@
 <script lang="ts">
-    const { data } = $props<{ data: { users: Array<{ username: string; email: string; team: string }> }}>();
+    const { data } = $props<{ data: { scopes: Array<{ name: string }> }}>();
 </script>
 
-<h1>Users</h1>
+<h1>Scope</h1>
 
-{#if data.users.length > 0}
+{#if data.scopes.length > 0}
     <table>
         <thead>
             <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Team</th>
+                <th>Name</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            {#each data.users as user}
+            {#each data.scopes as scope}
                 <tr>
-                    <td><a href="/users/{user.username}">{user.username}</a></td>
-                    <td>{user.email}</td>
-                    <td>{user.team}</td>
+                    <td>{scope.name}</td>
                     <td>
                         <button>Edit</button>
                         <button>Show Logs</button>
@@ -29,7 +25,7 @@
         </tbody>
     </table>
 {:else}
-    <p>No users available yet.</p>
+    <p>No scopes available yet.</p>
 {/if}
 
 <style>
