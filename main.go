@@ -28,14 +28,14 @@ func main() {
 	router := gin.Default()
 
 	// api endpoints
-	router.GET("/events", getEvents)
-	router.POST("/events", newEvent)
+	router.POST("/api/events", newEvent)
+	router.GET("/api/events", func(c *gin.Context) { c.JSON(http.StatusOK, getEventsSlice(c)) })
+	router.GET("/api/users", func(c *gin.Context) { c.JSON(http.StatusOK, getUsersSlice(c)) })
+	router.GET("/api/teams", func(c *gin.Context) { c.JSON(http.StatusOK, getTeamsSlice(c)) })
+	router.GET("/api/c2s", func(c *gin.Context) { c.JSON(http.StatusOK, getC2sSlice(c)) })
+	router.GET("/api/scope", func(c *gin.Context) { c.JSON(http.StatusOK, getScopeSlice(c)) })
 
 	router.Run()
-}
-
-func getEvents(c *gin.Context) {
-	c.JSON(http.StatusOK, getEventsSlice(c))
 }
 
 func newEvent(c *gin.Context) {
@@ -62,40 +62,6 @@ func newEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	c.JSON(http.StatusOK, event)
-}
-
-func indexHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "index.html", gin.H{
-		"events": getEventsSlice(c),
-	})
-}
-
-func usersHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "users.html", gin.H{
-		"users": getUsersSlice(c),
-	})
-}
-
-func teamsHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "teams.html", gin.H{
-		"teams": getTeamsSlice(c),
-	})
-}
-
-func c2sHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "c2s.html", gin.H{
-		"c2s": getC2sSlice(c),
-	})
-}
-
-func scopeHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "scope.html", gin.H{
-		"scope": getScopeSlice(c),
-	})
-}
-
-func configHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "config.html", gin.H{})
 }
 
 func getUserId(username string, ptr *int) {

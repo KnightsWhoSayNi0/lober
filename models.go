@@ -3,7 +3,7 @@ package main
 import "time"
 
 type Event struct {
-	ID      int64
+	ID      int64     `json:"id"`
 	Command string    `json:"command"`
 	User    string    `json:"user"`
 	C2      string    `json:"c2"`
@@ -12,25 +12,25 @@ type Event struct {
 }
 
 type User struct {
-	ID       int64
-	Username string
-	Email    string
-	Team     string // todo; users can be on multiple teams
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Team     string `json:"team"` // todo; users can be on multiple teams
 }
 
 type Team struct {
-	ID    int64
-	Name  string
-	Color string
-	Lead  string
+	ID    int64  `json:"id"`
+	Name  string `json:"name"`
+	Color string `json:"color"`
+	Lead  string `json:"lead"`
 }
 
 type C2 struct {
-	ID   int64
-	Name string
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
 }
 
 type Scope struct {
-	ID   int64
-	Name string
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
 }
