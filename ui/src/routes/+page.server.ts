@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 
 export async function load({ fetch }) {
     try {
-        const res = await fetch('http://localhost:8080/events');
+        const res = await fetch('http://localhost:8080/api/events');
 
         if (!res.ok) {
             throw error(res.status, `Failed to fetch events: ${res.statusText}`);

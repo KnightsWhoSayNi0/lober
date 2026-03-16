@@ -1,8 +1,8 @@
 <script lang="ts">
-    const { data } = $props<{ data: { events: Array<{ ID: number; command: string; user: string; c2: string; scope: string; time: string }> }}>();
+    const { data } = $props<{ data: { events: Array<{ command: string; user: string; c2: string; scope: string; time: string }> }}>();
 </script>
 
-<h1>events</h1>
+<h1>Events</h1>
 
 {#if data.events.length > 0}
     <table>
@@ -19,7 +19,7 @@
             {#each data.events as event}
                 <tr>
                     <td>{event.command}</td>
-                    <td>{event.user}</td>
+                    <td><a href="/users/{event.user}">{event.user}</a></td>
                     <td>{event.c2}</td>
                     <td>{event.scope}</td>
                     <td>{new Date(event.time).toTimeString().substring(0, 8)}</td>
