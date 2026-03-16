@@ -4,7 +4,7 @@ COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 COPY . /app/
 RUN --mount=type=cache,target="/root/.cache/go-build" \
-	go build -o server main.go
+	go build -o server *.go
 
 FROM alpine:3.22
 RUN apk --update add ca-certificates && \

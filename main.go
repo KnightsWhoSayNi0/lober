@@ -11,39 +11,6 @@ import (
 	"github.com/lib/pq"
 )
 
-type Event struct {
-	ID      int64
-	Command string    `json:"command"`
-	User    string    `json:"user"`
-	C2      string    `json:"c2"`
-	Scope   string    `json:"scope"`
-	Time    time.Time `json:"time"`
-}
-
-type User struct {
-	ID       int64
-	Username string
-	Email    string
-	Team     string // todo; users can be on multiple teams
-}
-
-type Team struct {
-	ID    int64
-	Name  string
-	Color string
-	Lead  string
-}
-
-type C2 struct {
-	ID   int64
-	Name string
-}
-
-type Scope struct {
-	ID   int64
-	Name string
-}
-
 var db *sql.DB
 var err error
 
@@ -63,12 +30,6 @@ func main() {
 	// api endpoints
 	router.GET("/events", getEvents)
 	router.POST("/events", newEvent)
-
-	// web pages
-	router.Static("/assets", "./assets")
-	router.GET("/", indexHandler)
-	router.GET("/users", usersHandler)
-	router.LoadHTMLGlob("templates/*")
 
 	router.Run()
 }
@@ -115,6 +76,28 @@ func usersHandler(c *gin.Context) {
 	})
 }
 
+func teamsHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "teams.html", gin.H{
+		"teams": getTeamsSlice(c),
+	})
+}
+
+func c2sHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "c2s.html", gin.H{
+		"c2s": getC2sSlice(c),
+	})
+}
+
+func scopeHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "scope.html", gin.H{
+		"scope": getScopeSlice(c),
+	})
+}
+
+func configHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "config.html", gin.H{})
+}
+
 func getUserId(username string, ptr *int) {
 	db.QueryRow("select id from users where username = $1", username).Scan(ptr)
 }
@@ -141,7 +124,6 @@ func getEventsSlice(c *gin.Context) []Event {
 		}
 		events = append(events, e)
 	}
-
 	return events
 }
 
@@ -162,6 +144,65 @@ func getUsersSlice(c *gin.Context) []User {
 
 		users = append(users, u)
 	}
-
 	return users
+}
+
+func getTeamsSlice(c *gin.Context) []Team {
+	rows, err := db.Query("select teams.name, teams.color, users.username from teams inner join users on teams.lead_id=users.id;")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	defer rows.Close()
+
+	teams := make([]Team, 0)
+	for rows.Next() {
+		var t Team
+		if err := rows.Scan(&t.Name, &t.Color, &t.Lead); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return nil
+		}
+
+		teams = append(teams, t)
+	}
+	return teams
+}
+
+func getC2sSlice(c *gin.Context) []C2 {
+	rows, err := db.Query("select c2s.name from c2s;")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	defer rows.Close()
+
+	c2s := make([]C2, 0)
+	for rows.Next() {
+		var c2 C2
+		if err := rows.Scan(&c2.Name); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return nil
+		}
+
+		c2s = append(c2s, c2)
+	}
+	return c2s
+}
+
+func getScopeSlice(c *gin.Context) []Scope {
+	rows, err := db.Query("select scope.name from scope;")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	defer rows.Close()
+
+	scope := make([]Scope, 0)
+	for rows.Next() {
+		var s Scope
+		if err := rows.Scan(&s.Name); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return nil
+		}
+
+		scope = append(scope, s)
+	}
+	return scope
 }

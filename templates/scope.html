@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>lober users</title>
+    <title>lober scope</title>
     <link rel="stylesheet" href="assets/css/app.css">
 </head>
 <body>
@@ -10,36 +10,32 @@
         <h1>Lober</h1>
         <ul>
             <li><a href="/">Home</a></li>
-            <li><a class="active" href="users">Users</a></li>
+            <li><a href="users">Users</a></li>
             <li><a href="teams">Teams</a></li>
             <li><a href="c2s">C2s</a></li>
-            <li><a href="scope">Scope</a></li>
+            <li><a class="active" href="scope">Scope</a></li>
             <li><a href="config">Config</a></li>
         </ul>
         <img src="assets/imgs/lober.gif">
     </div>
     <div class="contents">
-        <h1>Users</h1>
+        <h1>Scope</h1>
 
-        <button type="user-add">Add User</button>
+        <button type="scope-add">Add Scope</button>
         <br>
 
-        <div class="users">
+        <div class="scope">
             <table>
                 <tr>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Team</th>
+                    <th>Name</th>
                     <th>Actions</th>
                 </tr>
-                {{ range.users }}
+                {{ range.scope }}
                 <tr>
-                    <td>{{ .Username }}</td>
-                    <td>{{ .Email }}</td>
-                    <td>{{ .Team }}</td>
+                    <td>{{ .Name }}</td>
                     <td>
-                        <button type="user-edit-{{ .Username }}">Edit</button>
-                        <button type="user-show={{ .Username }}">Shows Logs</button>
+                        <button type="user-edit-{{ .Name }}">Edit</button>
+                        <button type="user-show={{ .Name }}">Shows Logs</button>
                     </td>
                 </tr>
                 {{ end }}
