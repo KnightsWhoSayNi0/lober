@@ -4,6 +4,11 @@
 
 <h1>Events</h1>
 
+<form>
+    <input type="text" placeholder="Filter" />
+</form>
+<br>
+
 {#if data.events.length > 0}
     <table>
         <thead>
