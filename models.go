@@ -2,19 +2,10 @@ package main
 
 import "time"
 
-type Event struct {
-	ID      int64     `json:"id"`
-	Command string    `json:"command"`
-	User    string    `json:"user"`
-	C2      string    `json:"c2"`
-	Scope   string    `json:"scope"`
-	Time    time.Time `json:"time"`
-}
-
 type User struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
-	Email    string `json:"email"`
+	Password string `json:"password"`
 	Team     string `json:"team"` // todo; users can be on multiple teams
 }
 
@@ -22,7 +13,6 @@ type Team struct {
 	ID    int64  `json:"id"`
 	Name  string `json:"name"`
 	Color string `json:"color"`
-	Lead  string `json:"lead"`
 }
 
 type C2 struct {
@@ -33,4 +23,22 @@ type C2 struct {
 type Scope struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
+}
+
+type Event struct {
+	ID      int64     `json:"id"`
+	Command string    `json:"command"`
+	User    string    `json:"user"`
+	C2      string    `json:"c2"`
+	Scope   string    `json:"scope"`
+	Time    time.Time `json:"time"`
+}
+
+type Token struct {
+	ID       int64     `json:"id"`
+	Username string    `json:"username"`
+	C2       string    `json:"c2"`
+	Token    string    `json:"token"`
+	Created  time.Time `json:"created"`
+	Expires  time.Time `json:"expires"`
 }

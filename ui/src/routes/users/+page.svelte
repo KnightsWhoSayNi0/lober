@@ -1,12 +1,13 @@
 <script lang="ts">
-    const { data } = $props<{ data: { users: Array<{ username: string; email: string; team: string }> }}>();
+    const { data } = $props<{ data: { users: Array<{ username: string; team: string }> }}>();
 
     let showModal = $state(false);
-    let formData = $state({ username: '', email: '', team: '' });
+    let formData = $state({ username: '', password: '', team: '' });
 
     async function handleSubmit(e: Event) {
         e.preventDefault();
-        
+
+        // hash password here like a good dev
         const response = await fetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -15,7 +16,7 @@
 
         if (response.ok) {
             showModal = false;
-            formData = { username: '', email: '', team: '' };
+            formData = { username: '', password: '', team: '' };
         }
     }
 </script>
@@ -35,8 +36,8 @@
                     <input type="text" bind:value={formData.username} required />
                 </label>
                 <label>
-                    Email:
-                    <input type="email" bind:value={formData.email} required />
+                    Password:
+                    <input type="email" bind:value={formData.password} required />
                 </label>
                 <label>
                     Team:
@@ -65,10 +66,10 @@
             {#each data.users as user}
                 <tr>
                     <td><a href="/users/{user.username}">{user.username}</a></td>
-                    <td>{user.email}</td>
                     <td>{user.team}</td>
                     <td>
                         <button>Edit</button>
+                        <button>Update Password</button>
                         <button>Show Logs</button>
                     </td>
                 </tr>
