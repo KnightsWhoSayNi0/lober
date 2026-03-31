@@ -83,7 +83,7 @@ order by events.time desc;
 
 func getUsersSlice(c *gin.Context) []User {
 	q := `
-select users.id, users.username, teams.name
+select users.username, teams.name
 from users inner join teams on users.team_id=teams.id;`
 	rows, err := db.Query(q)
 	if err != nil {
@@ -94,7 +94,7 @@ from users inner join teams on users.team_id=teams.id;`
 	users := make([]User, 0)
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Team); err != nil {
+		if err := rows.Scan(&u.Username, &u.Team); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return nil
 		}
@@ -107,10 +107,10 @@ from users inner join teams on users.team_id=teams.id;`
 func getUser(c *gin.Context, username string) User {
 	var user User
 	q := `
-select users.id, users.username, teams.name
+select users.username, teams.name
 from users inner join teams on users.team_id=teams.id
 where users.username = $1;`
-	err := db.QueryRow(q, username).Scan(&user.ID, &user.Username, &user.Team)
+	err := db.QueryRow(q, username).Scan(&user.Username, &user.Team)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
@@ -220,7 +220,11 @@ where scope.name = $1;`
 
 func getID(table string, column string, value string) (int64, error) {
 	var id int64
-	err := db.QueryRow("select id from $1 where $2 = $3", table, column, value).Scan(&id)
+	safeTable := pq.QuoteIdentifier(table)
+	safeColumn := pq.QuoteIdentifier(column)
+	q := fmt.Sprintf("select id from %s where %s = $1", safeTable, safeColumn)
+
+	err := db.QueryRow(q, value).Scan(&id)
 	return id, err
 }
 
@@ -279,10 +283,10 @@ func newUser(c *gin.Context) {
 	}
 
 	// check if user already exists
-	exists := "FALSE"
+	exists := "false"
 	err := db.QueryRow("select exists(select 1 from users where username = $1);", user.Username).Scan(&exists)
 
-	if exists == "TRUE" {
+	if exists == "true" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
 		return
 	}
