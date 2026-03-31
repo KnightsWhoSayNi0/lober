@@ -26,6 +26,28 @@ func init() {
 		log.Fatal(err)
 	}
 	fmt.Println("Connected to postgres")
+
+	// setup default user if needed
+	count := 0
+	err = db.QueryRow("select count(*) from users").Scan(&count)
+	if count == 0 {
+		// add default team
+		teamID := 0
+		err := db.QueryRow("insert into teams (name) values($1) returning id;", "default").Scan(&teamID)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		pHash, err := hashPassword("admin")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		_, err = db.Query("insert into users (username, password, team_id) values ($1, $2, $3);", "admin", pHash, teamID)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }
 
 // @title Lober API
