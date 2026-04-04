@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { invalidateAll } from '$app/navigation';
+
     const { data } = $props<{ data: { users: Array<{ username: string; team: string }> }}>();
 
     let showModal = $state(false);
@@ -7,7 +9,6 @@
     async function handleSubmit(e: Event) {
         e.preventDefault();
 
-        // hash password here like a good dev
         const response = await fetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -17,6 +18,19 @@
         if (response.ok) {
             showModal = false;
             formData = { username: '', password: '', team: '' };
+            await invalidateAll();
+        }
+    }
+
+    async function handleDelete(name: string) {
+        if (!confirm(`Are you sure you want to remove user "${name}"?`)) return;
+        
+        const response = await fetch(`/api/users/${name}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            await invalidateAll();
         }
     }
 </script>
@@ -37,7 +51,7 @@
                 </label>
                 <label>
                     Password:
-                    <input type="email" bind:value={formData.password} required />
+                    <input type="password" bind:value={formData.password} required />
                 </label>
                 <label>
                     Team:
@@ -52,42 +66,36 @@
     </div>
 {/if}
 
-{#if data.users.length > 0}
-    <table>
-        <thead>
-            <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Team</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {#each data.users as user}
+<div class="table-container">
+    {#if data.users.length > 0}
+        <table>
+            <thead>
                 <tr>
-                    <td><a href="/users/{user.username}">{user.username}</a></td>
-                    <td>{user.team}</td>
-                    <td>
-                        <button>Edit</button>
-                        <button>Update Password</button>
-                        <button>Show Logs</button>
-                    </td>
+                    <th>Username</th>
+                    <th>Team</th>
+                    <th>Actions</th>
                 </tr>
-            {/each}
-        </tbody>
-    </table>
-{:else}
-    <p>No users available yet.</p>
-{/if}
+            </thead>
+            <tbody>
+                {#each data.users as user}
+                    <tr>
+                        <td><a href="/users/{user.username}">{user.username}</a></td>
+                        <td><a href="/teams/{user.team}">{user.team}</a></td>
+                        <td>
+                            <button onclick={() => handleDelete(user.username)} class="danger"><i class="fa-solid fa-trash"></i> Remove</button>
+                            <button>Edit</button>
+                            <button>Update Password</button>
+                        </td>
+                    </tr>
+                {/each}
+            </tbody>
+        </table>
+    {:else}
+        <p class="empty-msg">No users available yet.</p>
+    {/if}
+</div>
 
 <style>
-    .header-container {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 20px;
-    }
-
     .modal-backdrop {
         position: fixed;
         top: 0;
@@ -98,6 +106,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        z-index: 1000;
     }
 
     .modal {
@@ -105,6 +114,12 @@
         padding: 20px;
         border-radius: 8px;
         min-width: 300px;
+        color: black;
+    }
+
+    :global(html.dark) .modal {
+        background: #2d2d2d;
+        color: white;
     }
 
     form {
@@ -125,18 +140,19 @@
         margin-top: 10px;
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
+    input {
+        padding: 4px;
     }
 
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
+    :global(html.dark) input {
+        background: #1a1a1a;
+        color: white;
+        border: 1px solid #444;
     }
 
-    th {
-        background-color: #f2f2f2;
-        text-align: left;
+    .empty-msg {
+        text-align: center;
+        padding: 4rem;
+        color: #888;
     }
 </style>

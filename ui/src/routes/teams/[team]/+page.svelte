@@ -4,7 +4,7 @@
     import EventTable from '$lib/components/EventTable.svelte';
     import Pagination from '$lib/components/Pagination.svelte';
 
-    const { data } = $props<{ data: { user: { username: string; team: string; email?: string }; events: Array<any>; limit: number; offset: number } }>();
+    const { data } = $props<{ data: { events: Array<any>; team: string; limit: number; offset: number } }>();
 
     let colorize = $state(false);
 
@@ -16,7 +16,7 @@
     }
 </script>
 
-<h1>User: {data.user.username}</h1>
+<h1>Events for Team: {data.team}</h1>
 
 <div class="header-actions">
     <div class="search-group">
@@ -34,27 +34,13 @@
     />
 </div>
 
-<EventTable events={data.events} {colorize} showUser={false} />
+<EventTable events={data.events} {colorize} />
 
 <style>
-    .header-actions {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        gap: 1rem;
-    }
-
     .search-group {
         display: flex;
         align-items: center;
         gap: 1.5rem;
-        flex-grow: 1;
-    }
-
-    h2 {
-        margin: 0;
-        font-size: 1.25rem;
     }
 
     .checkbox-label {

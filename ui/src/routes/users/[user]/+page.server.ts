@@ -1,18 +1,26 @@
-import { error } from '@sveltejs/kit'
+import { error } from '@sveltejs/kit';
 
-export async function load({ fetch, params }) {
+export async function load({ fetch, params, url }) {
+    const { user: username } = params;
+    const limit = url.searchParams.get('limit') || '50';
+    const offset = url.searchParams.get('offset') || '0';
+
     try {
-        const res = await fetch(`http://localhost:8080/api/users/${params.user}`);
+        const [userRes, eventsRes] = await Promise.all([
+            fetch(`http://localhost:8080/api/users/${username}`),
+            fetch(`http://localhost:8080/api/events?user=${username}&limit=${limit}&offset=${offset}`)
+        ]);
 
-        if (!res.ok) {
-            throw error(res.status, `Failed to fetch users: ${res.statusText}`);
+        if (!userRes.ok) {
+            throw error(userRes.status, `Failed to fetch user ${username}: ${userRes.statusText}`);
         }
 
-        const user = await res.json();
-        return { user: user };
+        const user = await userRes.json();
+        const events = eventsRes.ok ? await eventsRes.json() : [];
+
+        return { user, events, limit: parseInt(limit), offset: parseInt(offset) };
     } catch (err) {
-        // fallback: return empty array for UI resilience, but surface in logs
-        console.error('users load error', err);
-        return { user: {} };
+        console.error('user load error', err);
+        throw error(500, 'Internal Server Error');
     }
 }

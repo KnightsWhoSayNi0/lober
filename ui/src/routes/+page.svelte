@@ -1,54 +1,117 @@
 <script lang="ts">
-    const { data } = $props<{ data: { events: Array<{ command: string; user: string; c2: string; scope: string; time: string }> }}>();
+    import { onMount } from 'svelte';
+    import EventTable from '$lib/components/EventTable.svelte';
+    import Pagination from '$lib/components/Pagination.svelte';
+
+    const { data } = $props<{ data: { events: Array<any> } }>();
+    
+    let events = $state(data.events);
+    let filter = $state("");
+    let socket: WebSocket | null = $state(null);
+    let colorize = $state(false);
+    
+    let pageSize = $state(50);
+    let offset = $state(0);
+
+    onMount(() => {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        const s = new WebSocket(`${protocol}//${host}/api/ws`);
+
+        s.onopen = () => {
+            s.send(filter);
+            socket = s;
+        };
+
+        s.onmessage = (event) => {
+            const receivedData = JSON.parse(event.data);
+            if (Array.isArray(receivedData)) {
+                events = receivedData;
+            } else {
+                if (offset === 0) {
+                    events = [receivedData, ...events];
+                    if (events.length > pageSize) events = events.slice(0, pageSize);
+                }
+            }
+        };
+
+        return () => s.close();
+    });
+
+    $effect(() => {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(filter);
+        }
+    });
+
+    async function fetchPage(newOffset: number, newLimit: number) {
+        const res = await fetch(`/api/events?filter=${filter}&limit=${newLimit}&offset=${newOffset}`);
+        if (res.ok) {
+            events = await res.json();
+        }
+    }
+
+    function handleFilter(e: Event) {
+        filter = (e.target as HTMLInputElement).value;
+        offset = 0;
+        fetchPage(0, pageSize);
+    }
 </script>
 
 <h1>Events</h1>
 
-<form>
-    <input type="text" placeholder="Filter" />
-</form>
-<br>
+<div class="header-actions">
+    <div class="search-group">
+        <input 
+            type="text" 
+            placeholder="Search events..." 
+            value={filter}
+            oninput={handleFilter}
+            class="search-input"
+        />
+        <label class="checkbox-label">
+            <input type="checkbox" bind:checked={colorize} />
+            Colorize
+        </label>
+    </div>
 
-{#if data.events.length > 0}
-    <table>
-        <thead>
-            <tr>
-                <th>Command</th>
-                <th>User</th>
-                <th>C2</th>
-                <th>Scope</th>
-                <th>Time</th>
-            </tr>
-        </thead>
-        <tbody>
-            {#each data.events as event}
-                <tr>
-                    <td>{event.command}</td>
-                    <td><a href="/users/{event.user}">{event.user}</a></td>
-                    <td>{event.c2}</td>
-                    <td>{event.scope}</td>
-                    <td>{new Date(event.time).toTimeString().substring(0, 8)}</td>
-                </tr>
-            {/each}
-        </tbody>
-    </table>
-{:else}
-    <p>No events available yet.</p>
-{/if}
+    <Pagination 
+        bind:limit={pageSize} 
+        bind:offset={offset} 
+        totalCount={events.length} 
+        onchange={fetchPage} 
+    />
+</div>
+
+<EventTable {events} {colorize} />
 
 <style>
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    th, td {
+    .search-input {
+        padding: 0.6rem 1rem;
         border: 1px solid #ddd;
-        padding: 8px;
+        border-radius: 6px;
+        width: 300px;
+        background: #fff;
     }
 
-    th {
-        background-color: #f2f2f2;
-        text-align: left;
+    :global(html.dark) .search-input {
+        background: #2d2d2d;
+        border-color: #444;
+        color: #fff;
+    }
+
+    .search-group {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        user-select: none;
     }
 </style>
