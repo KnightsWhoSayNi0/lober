@@ -58,6 +58,8 @@
     }
 </script>
 
+<title>Lober</title>
+
 <h1>Events</h1>
 
 <div class="header-actions">

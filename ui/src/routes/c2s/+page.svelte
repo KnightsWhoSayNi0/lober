@@ -35,6 +35,8 @@
     }
 </script>
 
+<title>Lober C2s</title>
+
 <div class="header-container">
     <h1>C2s</h1>
     <button onclick={() => showModal = true}>New C2</button>

@@ -16,6 +16,8 @@
     }
 </script>
 
+<title>Lober Scope {data.scope}</title>
+
 <h1>Events for Scope: {data.scope}</h1>
 
 <div class="header-actions">

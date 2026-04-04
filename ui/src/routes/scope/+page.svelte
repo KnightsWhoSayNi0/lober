@@ -35,6 +35,8 @@
     }
 </script>
 
+<title>Lober Scope</title>
+
 <div class="header-container">
     <h1>Scope</h1>
     <button onclick={() => showModal = true}>New Scope</button>

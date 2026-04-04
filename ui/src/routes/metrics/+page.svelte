@@ -110,6 +110,8 @@
     });
 </script>
 
+<title>Lober Metrics</title>
+
 <div class="header-container">
     <h1>Metrics</h1>
     <div class="config-group">

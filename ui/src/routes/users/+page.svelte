@@ -35,6 +35,8 @@
     }
 </script>
 
+<title>Lober Users</title>
+
 <div class="header-container">
     <h1>Users</h1>
     <button onclick={() => showModal = true} >New User</button>

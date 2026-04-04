@@ -16,6 +16,8 @@
     }
 </script>
 
+<title>Lober C2 {data.c2}</title>
+
 <h1>Events for C2: {data.c2}</h1>
 
 <div class="header-actions">

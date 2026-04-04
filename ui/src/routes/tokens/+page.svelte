@@ -32,6 +32,8 @@
     }
 </script>
 
+<title>Lober Tokens</title>
+
 <div class="header-container">
     <h1>Authentication Tokens</h1>
     <button onclick={() => { showModal = true; lastGeneratedToken = ''; }}>New Token</button>

@@ -16,6 +16,8 @@
     }
 </script>
 
+<title>Lober Team {data.team}</title>
+
 <h1>Events for Team: {data.team}</h1>
 
 <div class="header-actions">

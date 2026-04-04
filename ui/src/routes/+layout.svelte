@@ -5,6 +5,7 @@
 	let { children } = $props();
     let isDark = $state(false);
     let useGif = $state(true);
+    let isCollapsed = $state(false);
 
     const LOBSTER_IMG = "/imgs/lobster.png";
     const LOBSTER_GIF = "/imgs/lober.gif";
@@ -15,6 +16,7 @@
             document.documentElement.classList.add('dark');
         }
         useGif = localStorage.getItem('useGif') !== 'false';
+        isCollapsed = localStorage.getItem('navCollapsed') === 'true';
     });
 
     function toggleTheme() {
@@ -32,6 +34,11 @@
         useGif = !useGif;
         localStorage.setItem('useGif', useGif.toString());
     }
+
+    function toggleNav() {
+        isCollapsed = !isCollapsed;
+        localStorage.setItem('navCollapsed', isCollapsed.toString());
+    }
 </script>
 
 <svelte:head>
@@ -41,31 +48,38 @@
 </svelte:head>
 
 <div class="app-container">
-    <nav>
+    <nav class={isCollapsed ? 'collapsed' : ''}>
         <div class="nav-content">
             <div class="brand">
-                <h1>Lober</h1>
+                {#if !isCollapsed}
+                    <h1>Lober</h1>
+                {/if}
                 <img src={LOBSTER_IMG} alt="lobster" class="lobster-img">
+                <button class="collapse-toggle" onclick={toggleNav} title={isCollapsed ? 'Expand' : 'Collapse'}>
+                    <i class="fa-solid {isCollapsed ? 'fa-angles-right' : 'fa-angles-left'}"></i>
+                </button>
             </div>
             <ul>
-                <li><a href="/"><i class="fa-solid fa-house"></i> Home</a></li>
-                <li><a href="/metrics"><i class="fa-solid fa-chart-line"></i> Metrics</a></li>
-                <li><a href="/users"><i class="fa-solid fa-users"></i> Users</a></li>
-                <li><a href="/teams"><i class="fa-solid fa-people-group"></i> Teams</a></li>
-                <li><a href="/c2s"><i class="fa-solid fa-server"></i> C2s</a></li>
-                <li><a href="/scope"><i class="fa-solid fa-bullseye"></i> Scope</a></li>
-                <li><a href="/tokens"><i class="fa-solid fa-key"></i> Tokens</a></li>
-                <li><a href="/config"><i class="fa-solid fa-gear"></i> Config</a></li>
+                <li><a href="/" title="Home"><i class="fa-solid fa-house"></i> {!isCollapsed ? 'Home' : ''}</a></li>
+                <li><a href="/metrics" title="Metrics"><i class="fa-solid fa-chart-line"></i> {!isCollapsed ? 'Metrics' : ''}</a></li>
+                <li><a href="/users" title="Users"><i class="fa-solid fa-users"></i> {!isCollapsed ? 'Users' : ''}</a></li>
+                <li><a href="/teams" title="Teams"><i class="fa-solid fa-people-group"></i> {!isCollapsed ? 'Teams' : ''}</a></li>
+                <li><a href="/c2s" title="C2s"><i class="fa-solid fa-server"></i> {!isCollapsed ? 'C2s' : ''}</a></li>
+                <li><a href="/scope" title="Scope"><i class="fa-solid fa-bullseye"></i> {!isCollapsed ? 'Scope' : ''}</a></li>
+                <li><a href="/tokens" title="Tokens"><i class="fa-solid fa-key"></i> {!isCollapsed ? 'Tokens' : ''}</a></li>
+                <li><a href="/config" title="Config"><i class="fa-solid fa-gear"></i> {!isCollapsed ? 'Config' : ''}</a></li>
             </ul>
         </div>
         <div class="nav-footer">
-            <button onclick={toggleTheme} class="theme-toggle">
+            <button onclick={toggleTheme} class="theme-toggle" title={isDark ? 'Light Mode' : 'Dark Mode'}>
                 <i class="fa-solid {isDark ? 'fa-sun' : 'fa-moon'}"></i>
-                {isDark ? 'Light' : 'Dark'} Mode
+                {!isCollapsed ? (isDark ? 'Light Mode' : 'Dark Mode') : ''}
             </button>
-            <button class="img-toggle" onclick={toggleGif} title=":3">
-                <img src={useGif ? LOBSTER_GIF : LOBSTER_IMG} alt="lober" class="lober-footer-img">
-            </button>
+            {#if !isCollapsed}
+                <button class="img-toggle" onclick={toggleGif} title=":3">
+                    <img src={useGif ? LOBSTER_GIF : LOBSTER_IMG} alt="lober" class="lober-footer-img">
+                </button>
+            {/if}
         </div>
     </nav>
 
@@ -103,6 +117,12 @@
         flex-direction: column;
         justify-content: space-between;
         background: #fcfcfc;
+        transition: width 0.1s ease-in-out;
+    }
+
+    nav.collapsed {
+        width: 64px;
+        padding: 1.25rem 0.75rem;
     }
 
     :global(html.dark) nav {
@@ -115,6 +135,12 @@
         align-items: center;
         gap: 8px;
         margin-bottom: 2rem;
+        position: relative;
+    }
+
+    nav.collapsed .brand {
+        justify-content: center;
+        flex-direction: column-reverse;
     }
 
     .lobster-img {
@@ -127,6 +153,21 @@
         font-weight: 600;
         letter-spacing: -0.5px;
         font-size: 1.5rem;
+    }
+
+    .collapse-toggle {
+        background: none;
+        border: none;
+        padding: 4px;
+        cursor: pointer;
+        color: #888;
+        font-size: 0.8rem;
+        margin-left: auto;
+    }
+
+    nav.collapsed .collapse-toggle {
+        margin-left: 0;
+        margin-top: 8px;
     }
 
 	nav ul {
@@ -145,12 +186,19 @@
         border-radius: 6px;
         margin-bottom: 0.25rem;
         font-size: 0.9rem;
+        white-space: nowrap;
+    }
+
+    nav.collapsed li a {
+        justify-content: center;
+        padding: 0.6rem 0;
     }
 
     nav li a i {
         width: 16px;
         text-align: center;
         color: #666;
+        flex-shrink: 0;
     }
 
     :global(html.dark) nav li a i {
@@ -188,6 +236,13 @@
         justify-content: center;
         gap: 8px;
         font-size: 0.85rem;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    nav.collapsed .theme-toggle {
+        padding: 0.5rem 0;
+        border: none;
     }
 
     :global(html.dark) .theme-toggle {

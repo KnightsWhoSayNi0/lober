@@ -16,6 +16,8 @@
     }
 </script>
 
+<title>Lober User {data.user.username}</title>
+
 <h1>User: {data.user.username}</h1>
 
 <div class="header-actions">

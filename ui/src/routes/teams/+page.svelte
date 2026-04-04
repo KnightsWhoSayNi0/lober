@@ -35,6 +35,8 @@
     }
 </script>
 
+<title>Lober Teams</title>
+
 <div class="header-container">
     <h1>Teams</h1>
     <button onclick={() => showModal = true}>New Team</button>
