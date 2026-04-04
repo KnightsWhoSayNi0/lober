@@ -26,12 +26,13 @@ type Scope struct {
 }
 
 type Event struct {
-	ID      int64     `json:"id"`
-	Command string    `json:"command"`
-	User    string    `json:"user"`
-	C2      string    `json:"c2"`
-	Scope   string    `json:"scope"`
-	Time    time.Time `json:"time"`
+	ID        int64     `json:"id"`
+	Command   string    `json:"command"`
+	User      string    `json:"user"`
+	TeamColor string    `json:"team_color"`
+	C2        string    `json:"c2"`
+	Scope     string    `json:"scope"`
+	Time      time.Time `json:"time"`
 }
 
 type Token struct {

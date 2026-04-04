@@ -1,26 +1,32 @@
 package main
 
 import (
-	"crypto/sha256"
 	"database/sql"
-	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 	"github.com/lib/pq"
-	"golang.org/x/crypto/bcrypt"
 )
 
-var db *sql.DB
-var err error
+var (
+	db  *sql.DB
+	err error
+	h   *Hub
+)
+
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool { return true },
+}
 
 func init() {
 	// impl env lookup
-	dsn := "postgres://lober:lober@db:5432/lober?sslmode=disable"
+	dsn := "postgres://lober:lober@db:5432/lober?sslmode=disable&search_path=lober"
 	db, err = sql.Open("postgres", dsn)
 	if err != nil {
 		log.Fatal(err)
@@ -57,50 +63,232 @@ func init() {
 func main() {
 	router := gin.Default()
 
+	// websocket
+	h = newHub()
+	go h.run()
+	router.GET("/api/ws", func(c *gin.Context) {
+		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		h.register <- conn
+	})
+
 	// api endpoints
 	router.GET("/api/events", func(c *gin.Context) { c.JSON(http.StatusOK, getEventsSlice(c)) })
 	router.GET("/api/users", func(c *gin.Context) { c.JSON(http.StatusOK, getUsersSlice(c)) })
 	router.GET("/api/teams", func(c *gin.Context) { c.JSON(http.StatusOK, getTeamsSlice(c)) })
 	router.GET("/api/c2s", func(c *gin.Context) { c.JSON(http.StatusOK, getC2sSlice(c)) })
 	router.GET("/api/scope", func(c *gin.Context) { c.JSON(http.StatusOK, getScopeSlice(c)) })
+	router.GET("/api/tokens", func(c *gin.Context) { c.JSON(http.StatusOK, getTokensSlice(c)) })
+	router.GET("/api/metrics", getMetrics)
 
 	router.GET("/api/users/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getUser(c, c.Param("name"))) })
 	router.GET("/api/teams/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getTeam(c, c.Param("name"))) })
 	router.GET("/api/c2s/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getC2(c, c.Param("name"))) })
 	router.GET("api/scope/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getScope(c, c.Param("name"))) })
+	router.GET("/api/tokens/:id", func(c *gin.Context) { c.JSON(http.StatusOK, getToken(c, c.Param("id"))) })
 
 	router.POST("/api/events", newEvent)
 	router.POST("/api/users", newUser)
 	router.POST("/api/teams", newTeam)
 	router.POST("/api/c2s", newC2)
 	router.POST("/api/scope", newScope)
+	router.POST("/api/tokens", newToken)
 
-	router.Run()
+	router.DELETE("/api/users/:name", removeUser)
+	router.DELETE("/api/teams/:name", removeTeam)
+	router.DELETE("/api/c2s/:name", removeC2)
+	router.DELETE("/api/scope/:name", removeScope)
+	router.DELETE("/api/tokens/:id", removeToken)
+
+	err := router.Run()
+	if err != nil {
+		return
+	}
 }
 
+// GET slices and individual
+
 func getEventsSlice(c *gin.Context) []Event {
+	filter := c.Query("filter")
+	team := c.Query("team")
+	user := c.Query("user")
+	c2 := c.Query("c2")
+	scope := c.Query("scope")
+	limitStr := c.DefaultQuery("limit", "100")
+	offsetStr := c.DefaultQuery("offset", "0")
+
+	limit, _ := strconv.Atoi(limitStr)
+	offset, _ := strconv.Atoi(offsetStr)
+
 	q := `
-select events.command, users.username, c2s.name, scope.name, events.time
+select events.command, users.username, teams.color, c2s.name, scope.name, events.time
 from events inner join users on events.user_id=users.id
 inner join c2s on events.c2_id=c2s.id inner join scope on events.scope_id=scope.id
-order by events.time desc;
+inner join teams on users.team_id=teams.id
+where 1=1
 `
-	rows, err := db.Query(q)
+	var args []interface{}
+	argCount := 1
+
+	if filter != "" {
+		q += fmt.Sprintf(" AND (events.command ILIKE $%d OR users.username ILIKE $%d OR c2s.name ILIKE $%d OR scope.name ILIKE $%d)", argCount, argCount, argCount, argCount)
+		args = append(args, "%"+filter+"%")
+		argCount++
+	}
+	if team != "" {
+		q += fmt.Sprintf(" AND teams.name = $%d", argCount)
+		args = append(args, team)
+		argCount++
+	}
+	if user != "" {
+		q += fmt.Sprintf(" AND users.username = $%d", argCount)
+		args = append(args, user)
+		argCount++
+	}
+	if c2 != "" {
+		q += fmt.Sprintf(" AND c2s.name = $%d", argCount)
+		args = append(args, c2)
+		argCount++
+	}
+	if scope != "" {
+		q += fmt.Sprintf(" AND scope.name = $%d", argCount)
+		args = append(args, scope)
+		argCount++
+	}
+
+	q += fmt.Sprintf(" order by events.time desc limit $%d offset $%d;", argCount, argCount+1)
+	args = append(args, limit, offset)
+
+	rows, err := db.Query(q, args...)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Printf("DB error in getEventsSlice: %v", err)
+		return []Event{}
 	}
 	defer rows.Close()
 
 	events := make([]Event, 0)
 	for rows.Next() {
 		var e Event
-		if err := rows.Scan(&e.Command, &e.User, &e.C2, &e.Scope, &e.Time); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return nil
+		if err := rows.Scan(&e.Command, &e.User, &e.TeamColor, &e.C2, &e.Scope, &e.Time); err != nil {
+			log.Printf("Scan error in getEventsSlice: %v", err)
+			return []Event{}
 		}
 		events = append(events, e)
 	}
 	return events
+}
+
+func getEventsWithFilter(filter string) []Event {
+	q := `
+select events.command, users.username, teams.color, c2s.name, scope.name, events.time
+from events inner join users on events.user_id=users.id
+inner join c2s on events.c2_id=c2s.id inner join scope on events.scope_id=scope.id
+inner join teams on users.team_id=teams.id
+where events.command ILIKE $1 OR users.username ILIKE $1 OR c2s.name ILIKE $1 OR scope.name ILIKE $1
+order by events.time desc;
+`
+	rows, err := db.Query(q, "%"+filter+"%")
+	if err != nil {
+		log.Printf("DB error in getEventsWithFilter: %v", err)
+		return []Event{}
+	}
+	defer rows.Close()
+
+	events := make([]Event, 0)
+	for rows.Next() {
+		var e Event
+		if err := rows.Scan(&e.Command, &e.User, &e.TeamColor, &e.C2, &e.Scope, &e.Time); err != nil {
+			log.Printf("Scan error in getEventsWithFilter: %v", err)
+			return []Event{}
+		}
+		events = append(events, e)
+	}
+	return events
+}
+
+func getMetrics(c *gin.Context) {
+	timeRange := c.DefaultQuery("range", "24 hours")
+	metrics := make(map[string]interface{})
+
+	// Validate range to prevent SQL injection
+	validRanges := map[string]bool{
+		"1 hour":   true,
+		"6 hours":  true,
+		"24 hours": true,
+		"7 days":   true,
+		"30 days":  true,
+	}
+	if !validRanges[timeRange] {
+		timeRange = "24 hours"
+	}
+
+	// Dynamic truncation based on range
+	trunc := "hour"
+	if timeRange == "7 days" || timeRange == "30 days" {
+		trunc = "day"
+	} else if timeRange == "1 hour" {
+		trunc = "minute"
+	}
+
+	// Events per hour/day for range
+	q := fmt.Sprintf(`
+		select date_trunc('%s', time) as period, count(*) 
+		from events 
+		where time > now() - interval '%s'
+		group by period order by period;
+	`, trunc, timeRange)
+
+	rows, _ := db.Query(q)
+	var timeline []map[string]interface{}
+	for rows != nil && rows.Next() {
+		var t time.Time
+		var count int
+		rows.Scan(&t, &count)
+		timeline = append(timeline, map[string]interface{}{"time": t, "count": count})
+	}
+	metrics["timeline"] = timeline
+
+	// Group counts for range
+	groupQueries := map[string]string{
+		"by_team": `
+			select teams.name, count(*) 
+			from events inner join users on events.user_id=users.id
+			inner join teams on users.team_id=teams.id
+			where events.time > now() - interval '%s'
+			group by teams.name order by count(*) desc;`,
+		"by_scope": `
+			select scope.name, count(*) 
+			from events inner join scope on events.scope_id=scope.id
+			where events.time > now() - interval '%s'
+			group by scope.name order by count(*) desc;`,
+		"by_c2": `
+			select c2s.name, count(*) 
+			from events inner join c2s on events.c2_id=c2s.id
+			where events.time > now() - interval '%s'
+			group by c2s.name order by count(*) desc;`,
+		"by_user": `
+			select users.username, count(*) 
+			from events inner join users on events.user_id=users.id
+			where events.time > now() - interval '%s'
+			group by users.username order by count(*) desc;`,
+	}
+
+	for key, query := range groupQueries {
+		rows, _ = db.Query(fmt.Sprintf(query, timeRange))
+		var list []map[string]interface{}
+		for rows != nil && rows.Next() {
+			var name string
+			var count int
+			rows.Scan(&name, &count)
+			list = append(list, map[string]interface{}{"label": name, "count": count})
+		}
+		metrics[key] = list
+	}
+
+	c.JSON(http.StatusOK, metrics)
 }
 
 func getUsersSlice(c *gin.Context) []User {
@@ -240,6 +428,47 @@ where scope.name = $1;`
 	return s
 }
 
+func getTokensSlice(c *gin.Context) []Token {
+	q := `
+select tokens.id, users.username, c2s.name, tokens.created, tokens.expires
+from tokens inner join users on tokens.user_id=users.id
+inner join c2s on tokens.c2_id=c2s.id;
+`
+	rows, err := db.Query(q)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	defer rows.Close()
+
+	tokens := make([]Token, 0)
+	for rows.Next() {
+		var t Token
+		if err := rows.Scan(&t.ID, &t.Username, &t.C2, &t.Created, &t.Expires); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return nil
+		}
+
+		tokens = append(tokens, t)
+	}
+	return tokens
+}
+
+func getToken(c *gin.Context, id string) Token {
+	var t Token
+	q := `
+select tokens.id, users.username, c2s.name, tokens.created, tokens.expires
+from tokens inner join users on tokens.user_id=users.id
+inner join c2s on tokens.c2_id=c2s.id
+where tokens.id = $1;
+`
+	err := db.QueryRow(q, id).Scan(&t.ID, &t.Username, &t.C2, &t.Created, &t.Expires)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	return t
+}
+
+// ID util
 func getID(table string, column string, value string) (int64, error) {
 	var id int64
 	safeTable := pq.QuoteIdentifier(table)
@@ -250,20 +479,7 @@ func getID(table string, column string, value string) (int64, error) {
 	return id, err
 }
 
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	return string(bytes), err
-}
-
-func checkPasswordHash(password string, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
-func hashToken(rawToken string) string {
-	bytes := sha256.Sum256([]byte(rawToken))
-	return hex.EncodeToString(bytes[:])
-}
+// NEW
 
 func newEvent(c *gin.Context) {
 	var event Event
@@ -283,58 +499,25 @@ func newEvent(c *gin.Context) {
 		return
 	}
 
-	tx, _ := db.Begin()
-	stmt, _ := tx.Prepare(pq.CopyIn("events", "command", "user_id", "c2_id", "scope_id", "time"))
-	stmt.Exec(event.Command, userID, c2ID, scopeID, event.Time)
-	stmt.Exec()
-	stmt.Close()
-	tx.Commit()
+	// Fetch team color
+	err = db.QueryRow("select teams.color from users inner join teams on users.team_id=teams.id where users.id = $1", userID).Scan(&event.TeamColor)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(http.StatusOK, event)
-	}
-}
-
-func newUser(c *gin.Context) {
-	var user User
-
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		log.Printf("Error fetching team color for event: %v", err)
 	}
 
-	// check if user already exists
-	exists := "false"
-	err := db.QueryRow("select exists(select 1 from users where username = $1);", user.Username).Scan(&exists)
+	_, err = db.Exec("insert into events (command, user_id, c2_id, scope_id, time) values ($1, $2, $3, $4, $5)",
+		event.Command, userID, c2ID, scopeID, event.Time)
 
-	if exists == "true" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
-		return
-	}
-
-	teamID, err := getID("teams", "name", user.Team)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	hash, err := hashPassword(user.Password)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
+	// broadcast new event
+	eventJSON, _ := json.Marshal(event)
+	h.broadcastData(eventJSON)
 
-	tx, _ := db.Begin()
-	stmt, _ := tx.Prepare(pq.CopyIn("users", "username", "password", "team_id"))
-	stmt.Exec(user.Username, hash, teamID)
-	stmt.Exec()
-	stmt.Close()
-	tx.Commit()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(http.StatusOK, user)
-	}
+	c.JSON(http.StatusOK, event)
 }
 
 func newTeam(c *gin.Context) {
@@ -345,12 +528,7 @@ func newTeam(c *gin.Context) {
 		return
 	}
 
-	tx, _ := db.Begin()
-	stmt, _ := tx.Prepare(pq.CopyIn("teams", "name", "color"))
-	stmt.Exec(team.Name, team.Color)
-	stmt.Exec()
-	stmt.Close()
-	tx.Commit()
+	_, err = db.Exec("insert into teams (name, color) values ($1, $2)", team.Name, team.Color)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	} else {
@@ -366,12 +544,7 @@ func newC2(c *gin.Context) {
 		return
 	}
 
-	tx, _ := db.Begin()
-	stmt, _ := tx.Prepare(pq.CopyIn("c2s", "name"))
-	stmt.Exec(c2.Name)
-	stmt.Exec()
-	stmt.Close()
-	tx.Commit()
+	_, err = db.Exec("insert into c2s (name) values ($1)", c2.Name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	} else {
@@ -387,12 +560,7 @@ func newScope(c *gin.Context) {
 		return
 	}
 
-	tx, _ := db.Begin()
-	stmt, _ := tx.Prepare(pq.CopyIn("scopes", "name"))
-	stmt.Exec(scope.Name)
-	stmt.Exec()
-	stmt.Close()
-	tx.Commit()
+	_, err = db.Exec("insert into scope (name) values ($1)", scope.Name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	} else {
@@ -400,62 +568,53 @@ func newScope(c *gin.Context) {
 	}
 }
 
-func newToken(c *gin.Context) {
-	var token Token
-	if err := c.ShouldBindJSON(&token); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	}
+// REMOVE
 
-	userID, err := getID("users", "username", token.Username)
-	c2ID, err := getID("c2s", "name", token.C2)
-
-	if token.Created.IsZero() || token.Expires.IsZero() {
-		token.Created = time.Now()
-		token.Expires = time.Now().Add(time.Hour * 24 * 7)
-	}
-
+func removeUser(c *gin.Context) {
+	name := c.Param("name")
+	_, err := db.Exec("delete from users where username = $1", name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	token.Token = hashToken(uuid.NewString()[:32])
-
-	tx, _ := db.Begin()
-	stmt, _ := tx.Prepare(pq.CopyIn("tokens", "token", "user_id", "c2_id", "created", "expires"))
-	stmt.Exec(token.Token, userID, c2ID, token.Created, token.Expires)
-	stmt.Exec()
-	stmt.Close()
-	tx.Commit()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(http.StatusOK, token)
-	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-func verifyToken(token string) (bool, Token) {
-	var rv Token
-	q := `
-select tokens.user_id, tokens.c2_id, tokens.created, tokens.expires
-from tokens inner join users on tokens.user_id=users.id
-inner join c2s on tokens.c2_id=c2s.id
-where tokens.token = $1;
-`
-
-	if len(token) < 1 {
-		return false, rv
-	}
-
-	tokenHash := hashToken(token)
-	err := db.QueryRow(q, tokenHash).Scan(&rv.Username, &rv.C2, &rv.Created, &rv.Expires)
+func removeTeam(c *gin.Context) {
+	name := c.Param("name")
+	_, err := db.Exec("delete from teams where name = $1", name)
 	if err != nil {
-		return false, rv
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
 
-	if rv.Expires.Before(time.Now()) {
-		return false, rv
+func removeC2(c *gin.Context) {
+	name := c.Param("name")
+	_, err := db.Exec("delete from c2s where name = $1", name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
 
-	return true, rv
+func removeScope(c *gin.Context) {
+	name := c.Param("name")
+	_, err := db.Exec("delete from scope where name = $1", name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func removeToken(c *gin.Context) {
+	id := c.Param("id")
+	_, err := db.Exec("delete from tokens where id = $1", id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
