@@ -29,6 +29,7 @@ create table lober.events (
 );
 create table lober.tokens (
     id          serial primary key,
+    prefix      varchar(3) not null unique,
     token       varchar not null unique,
     user_id     serial not null references users,
     c2_id       serial not null references c2s,

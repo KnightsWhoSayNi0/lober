@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -25,8 +26,23 @@ var upgrader = websocket.Upgrader{
 }
 
 func init() {
-	// impl env lookup
-	dsn := "postgres://lober:lober@db:5432/lober?sslmode=disable&search_path=lober"
+	// Use environment variables for database connection
+	host := os.Getenv("PGHOST")
+	port := os.Getenv("PGPORT")
+	if port == "" {
+		port = "5432"
+	}
+	user := os.Getenv("PGUSER")
+	password := os.Getenv("PGPASSWORD")
+	dbname := os.Getenv("PGDATABASE")
+	sslmode := os.Getenv("PGSSLMODE")
+	if sslmode == "" {
+		sslmode = "disable"
+	}
+
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s&search_path=lober",
+		user, password, host, port, dbname, sslmode)
+
 	db, err = sql.Open("postgres", dsn)
 	if err != nil {
 		log.Fatal(err)
@@ -58,10 +74,11 @@ func init() {
 
 // @title Lober API
 // @description Centralized Logging Server for Red Teams
-// @host localhost:8080
 // @BasePath /api
 func main() {
 	router := gin.Default()
+
+	router.Use(tokenAuthMiddleware())
 
 	// websocket
 	h = newHub()
@@ -88,7 +105,7 @@ func main() {
 	router.GET("/api/teams/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getTeam(c, c.Param("name"))) })
 	router.GET("/api/c2s/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getC2(c, c.Param("name"))) })
 	router.GET("api/scope/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getScope(c, c.Param("name"))) })
-	router.GET("/api/tokens/:id", func(c *gin.Context) { c.JSON(http.StatusOK, getToken(c, c.Param("id"))) })
+	router.GET("/api/tokens/:prefix", func(c *gin.Context) { c.JSON(http.StatusOK, getToken(c, c.Param("prefix"))) })
 
 	router.POST("/api/events", newEvent)
 	router.POST("/api/users", newUser)
@@ -101,12 +118,23 @@ func main() {
 	router.DELETE("/api/teams/:name", removeTeam)
 	router.DELETE("/api/c2s/:name", removeC2)
 	router.DELETE("/api/scope/:name", removeScope)
-	router.DELETE("/api/tokens/:id", removeToken)
+	router.DELETE("/api/tokens/:prefix", removeToken)
 
 	err := router.Run()
 	if err != nil {
 		return
 	}
+}
+
+// ID util
+func getID(table string, column string, value string) (int64, error) {
+	var id int64
+	safeTable := pq.QuoteIdentifier(table)
+	safeColumn := pq.QuoteIdentifier(column)
+	q := fmt.Sprintf("select id from %s where %s = $1", safeTable, safeColumn)
+
+	err := db.QueryRow(q, value).Scan(&id)
+	return id, err
 }
 
 // GET slices and individual
@@ -430,7 +458,7 @@ where scope.name = $1;`
 
 func getTokensSlice(c *gin.Context) []Token {
 	q := `
-select tokens.id, users.username, c2s.name, tokens.created, tokens.expires
+select tokens.prefix, users.username, c2s.name, tokens.created, tokens.expires
 from tokens inner join users on tokens.user_id=users.id
 inner join c2s on tokens.c2_id=c2s.id;
 `
@@ -443,7 +471,7 @@ inner join c2s on tokens.c2_id=c2s.id;
 	tokens := make([]Token, 0)
 	for rows.Next() {
 		var t Token
-		if err := rows.Scan(&t.ID, &t.Username, &t.C2, &t.Created, &t.Expires); err != nil {
+		if err := rows.Scan(&t.Prefix, &t.Username, &t.C2, &t.Created, &t.Expires); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return nil
 		}
@@ -453,30 +481,19 @@ inner join c2s on tokens.c2_id=c2s.id;
 	return tokens
 }
 
-func getToken(c *gin.Context, id string) Token {
+func getToken(c *gin.Context, prefix string) Token {
 	var t Token
 	q := `
-select tokens.id, users.username, c2s.name, tokens.created, tokens.expires
+select tokens.prefix, users.username, c2s.name, tokens.created, tokens.expires
 from tokens inner join users on tokens.user_id=users.id
 inner join c2s on tokens.c2_id=c2s.id
-where tokens.id = $1;
+where tokens.prefix = $1;
 `
-	err := db.QueryRow(q, id).Scan(&t.ID, &t.Username, &t.C2, &t.Created, &t.Expires)
+	err := db.QueryRow(q, prefix).Scan(&t.ID, &t.Prefix, &t.Username, &t.C2, &t.Created, &t.Expires)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	return t
-}
-
-// ID util
-func getID(table string, column string, value string) (int64, error) {
-	var id int64
-	safeTable := pq.QuoteIdentifier(table)
-	safeColumn := pq.QuoteIdentifier(column)
-	q := fmt.Sprintf("select id from %s where %s = $1", safeTable, safeColumn)
-
-	err := db.QueryRow(q, value).Scan(&id)
-	return id, err
 }
 
 // NEW
@@ -487,6 +504,14 @@ func newEvent(c *gin.Context) {
 	if err := c.ShouldBindJSON(&event); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	// Override user and c2 from authenticated context if present
+	if username, exists := c.Get("username"); exists {
+		event.User = username.(string)
+	}
+	if c2, exists := c.Get("c2"); exists {
+		event.C2 = c2.(string)
 	}
 
 	userID, err := getID("users", "username", event.User)
@@ -572,6 +597,11 @@ func newScope(c *gin.Context) {
 
 func removeUser(c *gin.Context) {
 	name := c.Param("name")
+
+	if name == "admin" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "admin is required"})
+	}
+
 	_, err := db.Exec("delete from users where username = $1", name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -611,8 +641,8 @@ func removeScope(c *gin.Context) {
 }
 
 func removeToken(c *gin.Context) {
-	id := c.Param("id")
-	_, err := db.Exec("delete from tokens where id = $1", id)
+	prefix := c.Param("prefix")
+	_, err := db.Exec("delete from tokens where prefix = $1", prefix)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}

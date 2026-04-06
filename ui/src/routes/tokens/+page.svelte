@@ -1,7 +1,9 @@
 <script lang="ts">
     import { invalidateAll } from '$app/navigation';
+    import { getContext } from 'svelte';
 
     const { data } = $props<{ data: { tokens: Array<any>, users: Array<any>, c2s: Array<any> }}>();
+    const getMasterToken = getContext<() => string>('masterToken');
 
     let showModal = $state(false);
     let formData = $state({ username: '', c2: '', expires_days: 7 });
@@ -12,7 +14,10 @@
 
         const response = await fetch('/api/tokens', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getMasterToken()}`
+            },
             body: JSON.stringify(formData)
         });
 
@@ -25,9 +30,14 @@
         }
     }
 
-    async function handleDelete(id: number) {
+    async function handleDelete(prefix: string) {
         if (!confirm('Remove this token?')) return;
-        const res = await fetch(`/api/tokens/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/tokens/${prefix}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${getMasterToken()}`
+            }
+        });
         if (res.ok) await invalidateAll();
     }
 </script>
@@ -52,6 +62,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>Prefix</th>
                     <th>User</th>
                     <th>C2</th>
                     <th>Created</th>
@@ -62,12 +73,13 @@
             <tbody>
                 {#each data.tokens as token}
                     <tr>
+                        <td><code>{token.prefix}</code></td>
                         <td>{token.username}</td>
                         <td>{token.c2}</td>
                         <td>{new Date(token.created).toLocaleString()}</td>
                         <td>{new Date(token.expires).toLocaleString()}</td>
                         <td>
-                            <button class="danger" onclick={() => handleDelete(token.id)}>Remove</button>
+                            <button class="danger" onclick={() => handleDelete(token.prefix)}>Remove</button>
                         </td>
                     </tr>
                 {/each}

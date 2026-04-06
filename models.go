@@ -37,6 +37,7 @@ type Event struct {
 
 type Token struct {
 	ID       int64     `json:"id"`
+	Prefix   string    `json:"prefix"`
 	Username string    `json:"username"`
 	C2       string    `json:"c2"`
 	Token    string    `json:"token"`

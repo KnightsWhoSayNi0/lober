@@ -1,7 +1,9 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, getContext } from 'svelte';
     import { Chart, registerables } from 'chart.js';
     Chart.register(...registerables);
+
+    const getMasterToken = getContext<() => string>('masterToken');
 
     let metrics = $state({
         timeline: [] as Array<{ time: string; count: number }>,
@@ -24,7 +26,11 @@
     let canvasElements: { [key: string]: HTMLCanvasElement } = $state({});
 
     async function fetchMetrics() {
-        const res = await fetch(`/api/metrics?range=${encodeURIComponent(timeRange)}`);
+        const res = await fetch(`/api/metrics?range=${encodeURIComponent(timeRange)}`, {
+            headers: {
+                'Authorization': `Bearer ${getMasterToken()}`
+            }
+        });
         if (res.ok) {
             metrics = await res.json();
             updateCharts();

@@ -1,11 +1,13 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
-    import { onMount } from 'svelte';
+    import { onMount, setContext } from 'svelte';
 
-	let { children } = $props();
+	let { children, data } = $props();
     let isDark = $state(false);
     let useGif = $state(true);
     let isCollapsed = $state(false);
+
+    setContext('masterToken', () => data.masterToken);
 
     const LOBSTER_IMG = "/imgs/lobster.png";
     const LOBSTER_GIF = "/imgs/lober.gif";

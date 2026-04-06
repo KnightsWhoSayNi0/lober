@@ -1,7 +1,9 @@
 <script lang="ts">
     import { invalidateAll } from '$app/navigation';
+    import { getContext } from 'svelte';
 
     const { data } = $props<{ data: { users: Array<{ username: string; team: string }> }}>();
+    const getMasterToken = getContext<() => string>('masterToken');
 
     let showModal = $state(false);
     let formData = $state({ username: '', password: '', team: '' });
@@ -11,7 +13,10 @@
 
         const response = await fetch('/api/users', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getMasterToken()}`
+            },
             body: JSON.stringify(formData)
         });
 
@@ -26,7 +31,10 @@
         if (!confirm(`Are you sure you want to remove user "${name}"?`)) return;
         
         const response = await fetch(`/api/users/${name}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${getMasterToken()}`
+            }
         });
 
         if (response.ok) {

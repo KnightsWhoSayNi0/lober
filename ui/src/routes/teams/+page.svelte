@@ -1,7 +1,9 @@
 <script lang="ts">
     import { invalidateAll } from '$app/navigation';
+    import { getContext } from 'svelte';
 
     const { data } = $props<{ data: { teams: Array<{ name: string; color: string; lead: string }> }}>();
+    const getMasterToken = getContext<() => string>('masterToken');
 
     let showModal = $state(false);
     let formData = $state({ name: '', color: '000000' });
@@ -11,8 +13,14 @@
 
         const response = await fetch('/api/teams', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getMasterToken()}`
+            },
+            body: JSON.stringify({
+                ...formData,
+                color: formData.color.replace('#', '')
+            })
         });
 
         if (response.ok) {
@@ -26,7 +34,10 @@
         if (!confirm(`Are you sure you want to remove team "${name}"?`)) return;
         
         const response = await fetch(`/api/teams/${name}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${getMasterToken()}`
+            }
         });
 
         if (response.ok) {
@@ -53,7 +64,7 @@
                 </label>
                 <label>
                     Color (Hex, e.g. FF0000):
-                    <input type="text" bind:value={formData.color} required pattern="[0-9A-Fa-f]{6}" title="6-character hex color code" />
+                    <input type="text" bind:value={formData.color} required pattern="#?[0-9A-Fa-f]{6}" title="6-character hex color code (with optional #)" />
                 </label>
                 <div class="actions">
                     <button type="button" onclick={() => showModal = false}>Cancel</button>

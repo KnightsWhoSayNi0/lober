@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -67,25 +68,32 @@ func newToken(c *gin.Context) {
 	var token Token
 	if err := c.ShouldBindJSON(&token); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	userID, err := getID("users", "username", token.Username)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
 	c2ID, err := getID("c2s", "name", token.C2)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "C2 not found"})
+		return
+	}
 
 	if token.Created.IsZero() || token.Expires.IsZero() {
 		token.Created = time.Now()
 		token.Expires = time.Now().Add(time.Hour * 24 * 7)
 	}
 
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+	rawToken := uuid.NewString()[:32]
+	token.Prefix = rawToken[:3]
+	token.Token = rawToken
+	hashed := hashToken(rawToken)
 
-	token.Token = hashToken(uuid.NewString()[:32])
-
-	_, err = db.Exec("insert into tokens (token, user_id, c2_id, created, expires) values ($1, $2, $3, $4, $5)",
-		token.Token, userID, c2ID, token.Created, token.Expires)
+	_, err = db.Exec("insert into tokens (token, user_id, c2_id, created, expires, prefix) values ($1, $2, $3, $4, $5, $6)",
+		hashed, userID, c2ID, token.Created, token.Expires, token.Prefix)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -97,8 +105,9 @@ func newToken(c *gin.Context) {
 func verifyToken(token string) (bool, Token) {
 	var rv Token
 	q := `
-select tokens.user_id, tokens.c2_id, tokens.created, tokens.expires
-from tokens inner join users on tokens.user_id=users.id
+select users.username, c2s.name, tokens.created, tokens.expires
+from tokens 
+inner join users on tokens.user_id=users.id
 inner join c2s on tokens.c2_id=c2s.id
 where tokens.token = $1;
 `
@@ -118,4 +127,47 @@ where tokens.token = $1;
 	}
 
 	return true, rv
+}
+
+// tokenAuthMiddleware I think this is the right way to do this...
+// might have to do some more research
+func tokenAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenString := ""
+		authHeader := c.GetHeader("Authorization")
+
+		if authHeader != "" && len(authHeader) >= 8 && authHeader[:7] == "Bearer " {
+			tokenString = authHeader[7:] // apres "Bearer "
+		} else {
+			// Fallback to query parameter (needed for WebSockets)
+			tokenString = c.Query("token")
+		}
+
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token required"})
+			c.Abort()
+			return
+		}
+
+		// check for master token (used by ui)
+		// TODO is this the best way to do this?
+		masterToken := os.Getenv("MASTER_TOKEN")
+		if masterToken != "" && tokenString == masterToken {
+			c.Set("username", "admin")
+			c.Set("c2", "ui")
+			c.Next()
+			return
+		}
+
+		ok, token := verifyToken(tokenString)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			c.Abort()
+			return
+		}
+
+		c.Set("username", token.Username)
+		c.Set("c2", token.C2)
+		c.Next()
+	}
 }

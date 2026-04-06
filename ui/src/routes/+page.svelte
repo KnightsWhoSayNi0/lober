@@ -1,9 +1,10 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, getContext } from 'svelte';
     import EventTable from '$lib/components/EventTable.svelte';
     import Pagination from '$lib/components/Pagination.svelte';
 
     const { data } = $props<{ data: { events: Array<any> } }>();
+    const getMasterToken = getContext<() => string>('masterToken');
     
     let events = $state(data.events);
     let filter = $state("");
@@ -16,7 +17,7 @@
     onMount(() => {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const host = window.location.host;
-        const s = new WebSocket(`${protocol}//${host}/api/ws`);
+        const s = new WebSocket(`${protocol}//${host}/api/ws?token=${getMasterToken()}`);
 
         s.onopen = () => {
             s.send(filter);
@@ -45,7 +46,11 @@
     });
 
     async function fetchPage(newOffset: number, newLimit: number) {
-        const res = await fetch(`/api/events?filter=${filter}&limit=${newLimit}&offset=${newOffset}`);
+        const res = await fetch(`/api/events?filter=${filter}&limit=${newLimit}&offset=${newOffset}`, {
+            headers: {
+                'Authorization': `Bearer ${getMasterToken()}`
+            }
+        });
         if (res.ok) {
             events = await res.json();
         }
