@@ -2,17 +2,20 @@ import { error } from '@sveltejs/kit';
 
 export async function load({ fetch }) {
     try {
-        const res = await fetch('http://localhost:8080/api/users');
+        const [usersRes, teamsRes] = await Promise.all([
+            fetch('http://localhost:8080/api/users'),
+            fetch('http://localhost:8080/api/teams')
+        ]);
 
-        if (!res.ok) {
-            throw error(res.status, `Failed to fetch users: ${res.statusText}`);
-        }
+        if (!usersRes.ok) throw error(usersRes.status, `Failed to fetch users: ${usersRes.statusText}`);
+        if (!teamsRes.ok) throw error(teamsRes.status, `Failed to fetch teams: ${teamsRes.statusText}`);
 
-        const users = await res.json();
-        return { users };
+        const users = await usersRes.json();
+        const teams = await teamsRes.json();
+        
+        return { users, teams };
     } catch (err) {
-        // fallback: return empty array for UI resilience, but surface in logs
         console.error('users load error', err);
-        return { users: [] };
+        return { users: [], teams: [] };
     }
 }

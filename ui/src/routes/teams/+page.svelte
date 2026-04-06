@@ -2,11 +2,11 @@
     import { invalidateAll } from '$app/navigation';
     import { getContext } from 'svelte';
 
-    const { data } = $props<{ data: { teams: Array<{ name: string; color: string; lead: string }> }}>();
+    const { data } = $props<{ data: { teams: Array<{ name: string; color: string; users: string[] }> }}>();
     const getMasterToken = getContext<() => string>('masterToken');
 
     let showModal = $state(false);
-    let formData = $state({ name: '', color: '000000' });
+    let formData = $state({ name: '', color: '#000000' });
 
     async function handleSubmit(e: Event) {
         e.preventDefault();
@@ -25,7 +25,7 @@
 
         if (response.ok) {
             showModal = false;
-            formData = { name: '', color: '000000' };
+            formData = { name: '', color: '#000000' };
             await invalidateAll();
         }
     }
@@ -63,8 +63,8 @@
                     <input type="text" bind:value={formData.name} required />
                 </label>
                 <label>
-                    Color (Hex, e.g. FF0000):
-                    <input type="text" bind:value={formData.color} required pattern="#?[0-9A-Fa-f]{6}" title="6-character hex color code (with optional #)" />
+                    Team Color:
+                    <input type="color" bind:value={formData.color} required />
                 </label>
                 <div class="actions">
                     <button type="button" onclick={() => showModal = false}>Cancel</button>
@@ -82,7 +82,7 @@
                 <tr>
                     <th>Name</th>
                     <th>Color</th>
-                    <th>Lead</th>
+                    <th>Users</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -91,7 +91,13 @@
                     <tr>
                         <td><a href="/teams/{team.name}">{team.name}</a></td>
                         <td style="background-color: #{team.color};"></td>
-                        <td><a href="/users/{team.lead}">{team.lead}</a></td>
+                        <td>
+                            {#if team.users && team.users.length > 0}
+                                {team.users.slice(0, 3).join(', ')}{#if team.users.length > 3}... (+{team.users.length - 3} more){/if}
+                            {:else}
+                                <span class="no-users">No users</span>
+                            {/if}
+                        </td>
                         <td>
                             <button onclick={() => handleDelete(team.name)} class="danger"><i class="fa-solid fa-trash"></i> Remove</button>
                             <button>Edit</button>
@@ -164,5 +170,10 @@
         text-align: center;
         padding: 4rem;
         color: #888;
+    }
+
+    .no-users {
+        color: #888;
+        font-style: italic;
     }
 </style>

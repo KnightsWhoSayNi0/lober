@@ -2,7 +2,7 @@
     import { invalidateAll } from '$app/navigation';
     import { getContext } from 'svelte';
 
-    const { data } = $props<{ data: { users: Array<{ username: string; team: string }> }}>();
+    const { data } = $props<{ data: { users: Array<{ username: string; team: string }>, teams: Array<{ name: string }> }}>();
     const getMasterToken = getContext<() => string>('masterToken');
 
     let showModal = $state(false);
@@ -65,7 +65,12 @@
                 </label>
                 <label>
                     Team:
-                    <input type="text" bind:value={formData.team} required />
+                    <select bind:value={formData.team} required>
+                        <option value="">Select Team</option>
+                        {#each data.teams as team}
+                            <option value={team.name}>{team.name}</option>
+                        {/each}
+                    </select>
                 </label>
                 <div class="actions">
                     <button type="button" onclick={() => showModal = false}>Cancel</button>
@@ -92,7 +97,9 @@
                         <td><a href="/users/{user.username}">{user.username}</a></td>
                         <td><a href="/teams/{user.team}">{user.team}</a></td>
                         <td>
-                            <button onclick={() => handleDelete(user.username)} class="danger"><i class="fa-solid fa-trash"></i> Remove</button>
+                            {#if user.username !== 'admin'}
+                                <button onclick={() => handleDelete(user.username)} class="danger"><i class="fa-solid fa-trash"></i> Remove</button>
+                            {/if}
                             <button>Edit</button>
                             <button>Update Password</button>
                         </td>

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -100,6 +101,7 @@ func main() {
 	router.GET("/api/scope", func(c *gin.Context) { c.JSON(http.StatusOK, getScopeSlice(c)) })
 	router.GET("/api/tokens", func(c *gin.Context) { c.JSON(http.StatusOK, getTokensSlice(c)) })
 	router.GET("/api/metrics", getMetrics)
+	router.GET("/api/export/events", exportEventsCSV)
 
 	router.GET("/api/users/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getUser(c, c.Param("name"))) })
 	router.GET("/api/teams/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getTeam(c, c.Param("name"))) })
@@ -237,88 +239,6 @@ order by events.time desc;
 	return events
 }
 
-func getMetrics(c *gin.Context) {
-	timeRange := c.DefaultQuery("range", "24 hours")
-	metrics := make(map[string]interface{})
-
-	// Validate range to prevent SQL injection
-	validRanges := map[string]bool{
-		"1 hour":   true,
-		"6 hours":  true,
-		"24 hours": true,
-		"7 days":   true,
-		"30 days":  true,
-	}
-	if !validRanges[timeRange] {
-		timeRange = "24 hours"
-	}
-
-	// Dynamic truncation based on range
-	trunc := "hour"
-	if timeRange == "7 days" || timeRange == "30 days" {
-		trunc = "day"
-	} else if timeRange == "1 hour" {
-		trunc = "minute"
-	}
-
-	// Events per hour/day for range
-	q := fmt.Sprintf(`
-		select date_trunc('%s', time) as period, count(*) 
-		from events 
-		where time > now() - interval '%s'
-		group by period order by period;
-	`, trunc, timeRange)
-
-	rows, _ := db.Query(q)
-	var timeline []map[string]interface{}
-	for rows != nil && rows.Next() {
-		var t time.Time
-		var count int
-		rows.Scan(&t, &count)
-		timeline = append(timeline, map[string]interface{}{"time": t, "count": count})
-	}
-	metrics["timeline"] = timeline
-
-	// Group counts for range
-	groupQueries := map[string]string{
-		"by_team": `
-			select teams.name, count(*) 
-			from events inner join users on events.user_id=users.id
-			inner join teams on users.team_id=teams.id
-			where events.time > now() - interval '%s'
-			group by teams.name order by count(*) desc;`,
-		"by_scope": `
-			select scope.name, count(*) 
-			from events inner join scope on events.scope_id=scope.id
-			where events.time > now() - interval '%s'
-			group by scope.name order by count(*) desc;`,
-		"by_c2": `
-			select c2s.name, count(*) 
-			from events inner join c2s on events.c2_id=c2s.id
-			where events.time > now() - interval '%s'
-			group by c2s.name order by count(*) desc;`,
-		"by_user": `
-			select users.username, count(*) 
-			from events inner join users on events.user_id=users.id
-			where events.time > now() - interval '%s'
-			group by users.username order by count(*) desc;`,
-	}
-
-	for key, query := range groupQueries {
-		rows, _ = db.Query(fmt.Sprintf(query, timeRange))
-		var list []map[string]interface{}
-		for rows != nil && rows.Next() {
-			var name string
-			var count int
-			rows.Scan(&name, &count)
-			list = append(list, map[string]interface{}{"label": name, "count": count})
-		}
-		metrics[key] = list
-	}
-
-	c.JSON(http.StatusOK, metrics)
-}
-
 func getUsersSlice(c *gin.Context) []User {
 	q := `
 select users.username, teams.name
@@ -357,8 +277,10 @@ where users.username = $1;`
 
 func getTeamsSlice(c *gin.Context) []Team {
 	q := `
-select teams.name, teams.color
-from teams;
+select teams.name, teams.color, COALESCE(array_agg(users.username) FILTER (WHERE users.username IS NOT NULL), '{}') as users
+from teams 
+left join users on teams.id = users.team_id
+group by teams.id, teams.name, teams.color;
 `
 	rows, err := db.Query(q)
 	if err != nil {
@@ -369,11 +291,12 @@ from teams;
 	teams := make([]Team, 0)
 	for rows.Next() {
 		var t Team
-		if err := rows.Scan(&t.Name, &t.Color); err != nil {
+		var users pq.StringArray
+		if err := rows.Scan(&t.Name, &t.Color, &users); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return nil
 		}
-
+		t.Users = users
 		teams = append(teams, t)
 	}
 	return teams
@@ -382,13 +305,17 @@ from teams;
 func getTeam(c *gin.Context, name string) Team {
 	var t Team
 	q := `
-select teams.name, teams.color
-from teams
-where teams.name = $1;`
-	err := db.QueryRow(q, name).Scan(&t.Name, &t.Color)
+select teams.name, teams.color, COALESCE(array_agg(users.username) FILTER (WHERE users.username IS NOT NULL), '{}') as users
+from teams 
+left join users on teams.id = users.team_id
+where teams.name = $1
+group by teams.id, teams.name, teams.color;`
+	var users pq.StringArray
+	err := db.QueryRow(q, name).Scan(&t.Name, &t.Color, &users)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
+	t.Users = users
 	return t
 }
 
@@ -496,6 +423,124 @@ where tokens.prefix = $1;
 	return t
 }
 
+func getMetrics(c *gin.Context) {
+	timeRange := c.DefaultQuery("range", "24 hours")
+	metrics := make(map[string]interface{})
+
+	// Validate range to prevent SQL injection
+	validRanges := map[string]bool{
+		"1 hour":   true,
+		"6 hours":  true,
+		"24 hours": true,
+		"7 days":   true,
+		"30 days":  true,
+	}
+	if !validRanges[timeRange] {
+		timeRange = "24 hours"
+	}
+
+	// Dynamic truncation based on range
+	trunc := "hour"
+	if timeRange == "7 days" || timeRange == "30 days" {
+		trunc = "day"
+	} else if timeRange == "1 hour" {
+		trunc = "minute"
+	}
+
+	// Events per hour/day for range
+	q := fmt.Sprintf(`
+		select date_trunc('%s', time) as period, count(*) 
+		from events 
+		where time > now() - interval '%s'
+		group by period order by period;
+	`, trunc, timeRange)
+
+	rows, _ := db.Query(q)
+	var timeline []map[string]interface{}
+	for rows != nil && rows.Next() {
+		var t time.Time
+		var count int
+		rows.Scan(&t, &count)
+		timeline = append(timeline, map[string]interface{}{"time": t, "count": count})
+	}
+	metrics["timeline"] = timeline
+
+	// Group counts for range
+	groupQueries := map[string]string{
+		"by_team": `
+			select teams.name, count(*) 
+			from events inner join users on events.user_id=users.id
+			inner join teams on users.team_id=teams.id
+			where events.time > now() - interval '%s'
+			group by teams.name order by count(*) desc;`,
+		"by_scope": `
+			select scope.name, count(*) 
+			from events inner join scope on events.scope_id=scope.id
+			where events.time > now() - interval '%s'
+			group by scope.name order by count(*) desc;`,
+		"by_c2": `
+			select c2s.name, count(*) 
+			from events inner join c2s on events.c2_id=c2s.id
+			where events.time > now() - interval '%s'
+			group by c2s.name order by count(*) desc;`,
+		"by_user": `
+			select users.username, count(*) 
+			from events inner join users on events.user_id=users.id
+			where events.time > now() - interval '%s'
+			group by users.username order by count(*) desc;`,
+	}
+
+	for key, query := range groupQueries {
+		rows, _ = db.Query(fmt.Sprintf(query, timeRange))
+		var list []map[string]interface{}
+		for rows != nil && rows.Next() {
+			var name string
+			var count int
+			rows.Scan(&name, &count)
+			list = append(list, map[string]interface{}{"label": name, "count": count})
+		}
+		metrics[key] = list
+	}
+
+	c.JSON(http.StatusOK, metrics)
+}
+
+func exportEventsCSV(c *gin.Context) {
+	q := `
+select users.username, c2s.name, scope.name, events.command, events.time
+from events inner join users on events.user_id=users.id
+inner join c2s on events.c2_id=c2s.id inner join scope on events.scope_id=scope.id
+order by events.time desc;
+`
+	rows, err := db.Query(q)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	c.Header("Content-Description", "File Transfer")
+	c.Header("Content-Disposition", "attachment; filename=lober_events.csv")
+	c.Header("Content-Type", "text/csv")
+
+	// headers
+	c.Writer.Write([]byte("User,C2,Scope,Command,Time\n"))
+
+	for rows.Next() {
+		var e Event
+		if err := rows.Scan(&e.User, &e.C2, &e.Scope, &e.Command, &e.Time); err != nil {
+			log.Printf("export error: %v", err)
+			continue
+		}
+
+		// simple CSV escaping for commas & quotes
+		cmd := strings.ReplaceAll(e.Command, "\"", "\"\"")
+		line := fmt.Sprintf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
+			e.User, e.C2, e.Scope, cmd, e.Time.Format(time.RFC3339))
+		c.Writer.Write([]byte(line))
+	}
+}
+
 // NEW
 
 func newEvent(c *gin.Context) {
@@ -506,12 +551,16 @@ func newEvent(c *gin.Context) {
 		return
 	}
 
-	// Override user and c2 from authenticated context if present
-	if username, exists := c.Get("username"); exists {
-		event.User = username.(string)
+	// Use token identities if not defined in JSON
+	if event.User == "" {
+		if username, exists := c.Get("username"); exists {
+			event.User = username.(string)
+		}
 	}
-	if c2, exists := c.Get("c2"); exists {
-		event.C2 = c2.(string)
+	if event.C2 == "" {
+		if c2, exists := c.Get("c2"); exists {
+			event.C2 = c2.(string)
+		}
 	}
 
 	userID, err := getID("users", "username", event.User)

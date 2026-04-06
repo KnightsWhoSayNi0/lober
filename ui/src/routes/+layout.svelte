@@ -154,7 +154,7 @@
         margin: 0;
         font-weight: 600;
         letter-spacing: -0.5px;
-        font-size: 1.5rem;
+        font-size: 2rem;
     }
 
     .collapse-toggle {

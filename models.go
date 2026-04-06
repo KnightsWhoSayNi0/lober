@@ -10,9 +10,10 @@ type User struct {
 }
 
 type Team struct {
-	ID    int64  `json:"id"`
-	Name  string `json:"name"`
-	Color string `json:"color"`
+	ID    int64    `json:"id"`
+	Name  string   `json:"name"`
+	Color string   `json:"color"`
+	Users []string `json:"users"`
 }
 
 type C2 struct {
