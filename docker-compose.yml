@@ -1,23 +1,54 @@
 services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - server
+      - ui
+    networks:
+      - lober
+    restart: unless-stopped
+
   server:
     build:
       context: .
       dockerfile: ./Dockerfile
-    ports:
-      - 8080:8080
-      - 8443:8443
+    expose:
+      - 8080
     restart: unless-stopped
     networks:
       - lober
     environment:
       - PORT=8080
       - PGHOST=db
-      - PGDATABASE=lober
       - PGUSER=lober
       - PGPASSWORD=lober
+      - PGDATABASE=lober
       - PGSSLMODE=disable
-  
+      - MASTER_TOKEN=dev-master-token
+    depends_on:
+      - db
+
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    expose:
+      - 3000
+    restart: unless-stopped
+    networks:
+      - lober
+    environment:
+      - MASTER_TOKEN=dev-master-token
+      - PUBLIC_MASTER_TOKEN=dev-master-token
+    depends_on:
+      - server
+
   db:
+
     image: postgres
     restart: unless-stopped
     ports:
