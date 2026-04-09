@@ -61,7 +61,7 @@ func init() {
 			log.Fatal(err)
 		}
 
-		pHash, err := hashPassword("admin")
+		pHash, err := HashPassword("admin")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -82,8 +82,8 @@ func main() {
 	router.Use(tokenAuthMiddleware())
 
 	// websocket
-	h = newHub()
-	go h.run()
+	h = NewHub()
+	go h.Run()
 	router.GET("/api/ws", func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
@@ -94,33 +94,33 @@ func main() {
 	})
 
 	// api endpoints
-	router.GET("/api/events", func(c *gin.Context) { c.JSON(http.StatusOK, getEventsSlice(c)) })
-	router.GET("/api/users", func(c *gin.Context) { c.JSON(http.StatusOK, getUsersSlice(c)) })
-	router.GET("/api/teams", func(c *gin.Context) { c.JSON(http.StatusOK, getTeamsSlice(c)) })
-	router.GET("/api/c2s", func(c *gin.Context) { c.JSON(http.StatusOK, getC2sSlice(c)) })
-	router.GET("/api/scope", func(c *gin.Context) { c.JSON(http.StatusOK, getScopeSlice(c)) })
-	router.GET("/api/tokens", func(c *gin.Context) { c.JSON(http.StatusOK, getTokensSlice(c)) })
-	router.GET("/api/metrics", getMetrics)
-	router.GET("/api/export/events", exportEventsCSV)
+	router.GET("/api/events", func(c *gin.Context) { c.JSON(http.StatusOK, GetEventsSlice(c)) })
+	router.GET("/api/users", func(c *gin.Context) { c.JSON(http.StatusOK, GetUsersSlice(c)) })
+	router.GET("/api/teams", func(c *gin.Context) { c.JSON(http.StatusOK, GetTeamsSlice(c)) })
+	router.GET("/api/c2s", func(c *gin.Context) { c.JSON(http.StatusOK, GetC2sSlice(c)) })
+	router.GET("/api/scope", func(c *gin.Context) { c.JSON(http.StatusOK, GetScopeSlice(c)) })
+	router.GET("/api/tokens", func(c *gin.Context) { c.JSON(http.StatusOK, GetTokensSlice(c)) })
+	router.GET("/api/metrics", GetMetrics)
+	router.GET("/api/export/events", ExportEventsCSV)
 
-	router.GET("/api/users/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getUser(c, c.Param("name"))) })
-	router.GET("/api/teams/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getTeam(c, c.Param("name"))) })
-	router.GET("/api/c2s/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getC2(c, c.Param("name"))) })
-	router.GET("api/scope/:name", func(c *gin.Context) { c.JSON(http.StatusOK, getScope(c, c.Param("name"))) })
-	router.GET("/api/tokens/:prefix", func(c *gin.Context) { c.JSON(http.StatusOK, getToken(c, c.Param("prefix"))) })
+	router.GET("/api/users/:name", func(c *gin.Context) { c.JSON(http.StatusOK, GetUser(c, c.Param("name"))) })
+	router.GET("/api/teams/:name", func(c *gin.Context) { c.JSON(http.StatusOK, GetTeam(c, c.Param("name"))) })
+	router.GET("/api/c2s/:name", func(c *gin.Context) { c.JSON(http.StatusOK, GetC2(c, c.Param("name"))) })
+	router.GET("api/scope/:name", func(c *gin.Context) { c.JSON(http.StatusOK, GetScope(c, c.Param("name"))) })
+	router.GET("/api/tokens/:prefix", func(c *gin.Context) { c.JSON(http.StatusOK, GetToken(c, c.Param("prefix"))) })
 
-	router.POST("/api/events", newEvent)
-	router.POST("/api/users", newUser)
-	router.POST("/api/teams", newTeam)
-	router.POST("/api/c2s", newC2)
-	router.POST("/api/scope", newScope)
-	router.POST("/api/tokens", newToken)
+	router.POST("/api/events", NewEvent)
+	router.POST("/api/users", NewUser)
+	router.POST("/api/teams", NewTeam)
+	router.POST("/api/c2s", NewC2)
+	router.POST("/api/scope", NewScope)
+	router.POST("/api/tokens", NewToken)
 
-	router.DELETE("/api/users/:name", removeUser)
-	router.DELETE("/api/teams/:name", removeTeam)
-	router.DELETE("/api/c2s/:name", removeC2)
-	router.DELETE("/api/scope/:name", removeScope)
-	router.DELETE("/api/tokens/:prefix", removeToken)
+	router.DELETE("/api/users/:name", RemoveUser)
+	router.DELETE("/api/teams/:name", RemoveTeam)
+	router.DELETE("/api/c2s/:name", RemoveC2)
+	router.DELETE("/api/scope/:name", RemoveScope)
+	router.DELETE("/api/tokens/:prefix", RemoveToken)
 
 	err := router.Run()
 	if err != nil {
@@ -128,8 +128,8 @@ func main() {
 	}
 }
 
-// ID util
-func getID(table string, column string, value string) (int64, error) {
+// GetID ID util
+func GetID(table string, column string, value string) (int64, error) {
 	var id int64
 	safeTable := pq.QuoteIdentifier(table)
 	safeColumn := pq.QuoteIdentifier(column)
@@ -141,7 +141,7 @@ func getID(table string, column string, value string) (int64, error) {
 
 // GET slices and individual
 
-func getEventsSlice(c *gin.Context) []Event {
+func GetEventsSlice(c *gin.Context) []Event {
 	filter := c.Query("filter")
 	team := c.Query("team")
 	user := c.Query("user")
@@ -211,7 +211,7 @@ where 1=1
 	return events
 }
 
-func getEventsWithFilter(filter string) []Event {
+func GetEventsWithFilter(filter string) []Event {
 	q := `
 select events.command, users.username, teams.color, c2s.name, scope.name, events.time
 from events inner join users on events.user_id=users.id
@@ -239,7 +239,7 @@ order by events.time desc;
 	return events
 }
 
-func getUsersSlice(c *gin.Context) []User {
+func GetUsersSlice(c *gin.Context) []User {
 	q := `
 select users.username, teams.name
 from users inner join teams on users.team_id=teams.id;`
@@ -262,7 +262,7 @@ from users inner join teams on users.team_id=teams.id;`
 	return users
 }
 
-func getUser(c *gin.Context, username string) User {
+func GetUser(c *gin.Context, username string) User {
 	var user User
 	q := `
 select users.username, teams.name
@@ -275,7 +275,7 @@ where users.username = $1;`
 	return user
 }
 
-func getTeamsSlice(c *gin.Context) []Team {
+func GetTeamsSlice(c *gin.Context) []Team {
 	q := `
 select teams.name, teams.color, COALESCE(array_agg(users.username) FILTER (WHERE users.username IS NOT NULL), '{}') as users
 from teams 
@@ -302,7 +302,7 @@ group by teams.id, teams.name, teams.color;
 	return teams
 }
 
-func getTeam(c *gin.Context, name string) Team {
+func GetTeam(c *gin.Context, name string) Team {
 	var t Team
 	q := `
 select teams.name, teams.color, COALESCE(array_agg(users.username) FILTER (WHERE users.username IS NOT NULL), '{}') as users
@@ -319,7 +319,7 @@ group by teams.id, teams.name, teams.color;`
 	return t
 }
 
-func getC2sSlice(c *gin.Context) []C2 {
+func GetC2sSlice(c *gin.Context) []C2 {
 	rows, err := db.Query("select c2s.name from c2s;")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -339,7 +339,7 @@ func getC2sSlice(c *gin.Context) []C2 {
 	return c2s
 }
 
-func getC2(c *gin.Context, name string) C2 {
+func GetC2(c *gin.Context, name string) C2 {
 	var c2 C2
 	q := `
 select c2s.name from c2s
@@ -351,7 +351,7 @@ where c2s.name = $1;`
 	return c2
 }
 
-func getScopeSlice(c *gin.Context) []Scope {
+func GetScopeSlice(c *gin.Context) []Scope {
 	rows, err := db.Query("select scope.name from scope;")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -371,7 +371,7 @@ func getScopeSlice(c *gin.Context) []Scope {
 	return scope
 }
 
-func getScope(c *gin.Context, name string) Scope {
+func GetScope(c *gin.Context, name string) Scope {
 	var s Scope
 	q := `
 select scope.name from scope
@@ -383,7 +383,7 @@ where scope.name = $1;`
 	return s
 }
 
-func getTokensSlice(c *gin.Context) []Token {
+func GetTokensSlice(c *gin.Context) []Token {
 	q := `
 select tokens.prefix, users.username, c2s.name, tokens.created, tokens.expires
 from tokens inner join users on tokens.user_id=users.id
@@ -408,7 +408,7 @@ inner join c2s on tokens.c2_id=c2s.id;
 	return tokens
 }
 
-func getToken(c *gin.Context, prefix string) Token {
+func GetToken(c *gin.Context, prefix string) Token {
 	var t Token
 	q := `
 select tokens.prefix, users.username, c2s.name, tokens.created, tokens.expires
@@ -423,7 +423,7 @@ where tokens.prefix = $1;
 	return t
 }
 
-func getMetrics(c *gin.Context) {
+func GetMetrics(c *gin.Context) {
 	timeRange := c.DefaultQuery("range", "24 hours")
 	metrics := make(map[string]interface{})
 
@@ -505,7 +505,7 @@ func getMetrics(c *gin.Context) {
 	c.JSON(http.StatusOK, metrics)
 }
 
-func exportEventsCSV(c *gin.Context) {
+func ExportEventsCSV(c *gin.Context) {
 	q := `
 select users.username, c2s.name, scope.name, events.command, events.time
 from events inner join users on events.user_id=users.id
@@ -543,7 +543,7 @@ order by events.time desc;
 
 // NEW
 
-func newEvent(c *gin.Context) {
+func NewEvent(c *gin.Context) {
 	var event Event
 
 	if err := c.ShouldBindJSON(&event); err != nil {
@@ -563,9 +563,9 @@ func newEvent(c *gin.Context) {
 		}
 	}
 
-	userID, err := getID("users", "username", event.User)
-	c2ID, err := getID("c2s", "name", event.C2)
-	scopeID, err := getID("scope", "name", event.Scope)
+	userID, err := GetID("users", "username", event.User)
+	c2ID, err := GetID("c2s", "name", event.C2)
+	scopeID, err := GetID("scope", "name", event.Scope)
 	event.Time = time.Now()
 
 	if err != nil {
@@ -589,12 +589,12 @@ func newEvent(c *gin.Context) {
 
 	// broadcast new event
 	eventJSON, _ := json.Marshal(event)
-	h.broadcastData(eventJSON)
+	h.BroadcastData(eventJSON)
 
 	c.JSON(http.StatusOK, event)
 }
 
-func newTeam(c *gin.Context) {
+func NewTeam(c *gin.Context) {
 	var team Team
 
 	if err := c.ShouldBindJSON(&team); err != nil {
@@ -610,7 +610,7 @@ func newTeam(c *gin.Context) {
 	}
 }
 
-func newC2(c *gin.Context) {
+func NewC2(c *gin.Context) {
 	var c2 C2
 
 	if err := c.ShouldBindJSON(&c2); err != nil {
@@ -626,7 +626,7 @@ func newC2(c *gin.Context) {
 	}
 }
 
-func newScope(c *gin.Context) {
+func NewScope(c *gin.Context) {
 	var scope Scope
 
 	if err := c.ShouldBindJSON(&scope); err != nil {
@@ -644,7 +644,7 @@ func newScope(c *gin.Context) {
 
 // REMOVE
 
-func removeUser(c *gin.Context) {
+func RemoveUser(c *gin.Context) {
 	name := c.Param("name")
 
 	if name == "admin" {
@@ -659,7 +659,7 @@ func removeUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-func removeTeam(c *gin.Context) {
+func RemoveTeam(c *gin.Context) {
 	name := c.Param("name")
 	_, err := db.Exec("delete from teams where name = $1", name)
 	if err != nil {
@@ -669,7 +669,7 @@ func removeTeam(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-func removeC2(c *gin.Context) {
+func RemoveC2(c *gin.Context) {
 	name := c.Param("name")
 	_, err := db.Exec("delete from c2s where name = $1", name)
 	if err != nil {
@@ -679,7 +679,7 @@ func removeC2(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-func removeScope(c *gin.Context) {
+func RemoveScope(c *gin.Context) {
 	name := c.Param("name")
 	_, err := db.Exec("delete from scope where name = $1", name)
 	if err != nil {
@@ -689,7 +689,7 @@ func removeScope(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-func removeToken(c *gin.Context) {
+func RemoveToken(c *gin.Context) {
 	prefix := c.Param("prefix")
 	_, err := db.Exec("delete from tokens where prefix = $1", prefix)
 	if err != nil {

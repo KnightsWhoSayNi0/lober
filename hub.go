@@ -24,7 +24,7 @@ type Hub struct {
 	mu         sync.Mutex
 }
 
-func newHub() *Hub {
+func NewHub() *Hub {
 	return &Hub{
 		clients:    make(map[*Client]bool),
 		broadcast:  make(chan []byte),
@@ -33,7 +33,7 @@ func newHub() *Hub {
 	}
 }
 
-func (c *Client) readPump() {
+func (c *Client) ReadPump() {
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -53,13 +53,13 @@ func (c *Client) readPump() {
 		log.Printf("Client filter updated: %q", c.filter)
 
 		// When filter updates, send the current filtered dataset
-		events := getEventsWithFilter(c.filter)
+		events := GetEventsWithFilter(c.filter)
 		eventsJSON, _ := json.Marshal(events)
 		c.send <- eventsJSON
 	}
 }
 
-func (c *Client) writePump() {
+func (c *Client) WritePump() {
 	defer func() {
 		c.conn.Close()
 	}()
@@ -78,7 +78,7 @@ func (c *Client) writePump() {
 	}
 }
 
-func (h *Hub) run() {
+func (h *Hub) Run() {
 	for {
 		select {
 		case conn := <-h.register:
@@ -87,8 +87,8 @@ func (h *Hub) run() {
 			h.clients[client] = true
 			h.mu.Unlock()
 			log.Printf("New client registered")
-			go client.writePump()
-			go client.readPump()
+			go client.WritePump()
+			go client.ReadPump()
 		case client := <-h.unregister:
 			h.mu.Lock()
 			if _, ok := h.clients[client]; ok {
@@ -108,7 +108,7 @@ func (h *Hub) run() {
 			h.mu.Lock()
 			for client := range h.clients {
 				// Check if event matches client filter
-				if eventMatchesFilter(event, client.filter) {
+				if EventMatchesFilter(event, client.filter) {
 					select {
 					case client.send <- message:
 					default:
@@ -122,7 +122,7 @@ func (h *Hub) run() {
 	}
 }
 
-func eventMatchesFilter(e Event, filter string) bool {
+func EventMatchesFilter(e Event, filter string) bool {
 	if filter == "" {
 		return true
 	}
@@ -133,6 +133,6 @@ func eventMatchesFilter(e Event, filter string) bool {
 		strings.Contains(strings.ToLower(e.Scope), f)
 }
 
-func (h *Hub) broadcastData(data []byte) {
+func (h *Hub) BroadcastData(data []byte) {
 	h.broadcast <- data
 }

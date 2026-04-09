@@ -12,12 +12,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func hashPassword(password string) (string, error) {
+func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }
 
-func checkPasswordHash(password string, hash string) bool {
+func CheckPasswordHash(password string, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
@@ -27,7 +27,7 @@ func hashToken(rawToken string) string {
 	return hex.EncodeToString(bytes[:])
 }
 
-func newUser(c *gin.Context) {
+func NewUser(c *gin.Context) {
 	var user User
 
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -44,13 +44,13 @@ func newUser(c *gin.Context) {
 		return
 	}
 
-	teamID, err := getID("teams", "name", user.Team)
+	teamID, err := GetID("teams", "name", user.Team)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	hash, err := hashPassword(user.Password)
+	hash, err := HashPassword(user.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -64,19 +64,19 @@ func newUser(c *gin.Context) {
 	}
 }
 
-func newToken(c *gin.Context) {
+func NewToken(c *gin.Context) {
 	var token Token
 	if err := c.ShouldBindJSON(&token); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	userID, err := getID("users", "username", token.Username)
+	userID, err := GetID("users", "username", token.Username)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
-	c2ID, err := getID("c2s", "name", token.C2)
+	c2ID, err := GetID("c2s", "name", token.C2)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "C2 not found"})
 		return
