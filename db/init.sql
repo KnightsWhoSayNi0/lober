@@ -17,7 +17,9 @@ create table lober.c2s (
 );
 create table lober.scope (
     id          serial primary key,
-    name        varchar(32) unique not null
+    name        varchar(32) not null,
+    ip_addr     inet unique not null,
+    team        int not null
 );
 create table lober.events (
     id          serial primary key,

@@ -22,8 +22,10 @@ type C2 struct {
 }
 
 type Scope struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID     int64  `json:"id"`
+	Name   string `json:"name"`
+	IPAddr string `json:"ipaddr"`
+	Team   int    `json:"team"`
 }
 
 type Event struct {
@@ -44,4 +46,21 @@ type Token struct {
 	Token    string    `json:"token"`
 	Created  time.Time `json:"created"`
 	Expires  time.Time `json:"expires"`
+}
+
+// pwnboard import json structs
+
+type PwnboardHost struct {
+	IPAddr string `json:"ip"`
+	Team   string `json:"team"`
+}
+
+type PwnboardBox struct {
+	Name  string         `json:"name"`
+	Hosts []PwnboardHost `json:"hosts"`
+}
+
+type Pwnboard struct {
+	Teams []int         `json:"teams"`
+	Board []PwnboardBox `json:"board"`
 }

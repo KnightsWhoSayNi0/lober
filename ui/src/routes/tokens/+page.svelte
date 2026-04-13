@@ -40,6 +40,14 @@
         });
         if (res.ok) await invalidateAll();
     }
+    async function copyToClipboard(text: string) {
+        try {
+            await navigator.clipboard.writeText(text);
+            alert('Token copied to clipboard');
+        } catch (err) {
+            alert('Failed to copy token');
+        }
+    }
 </script>
 
 <title>Lober Tokens</title>
@@ -53,7 +61,12 @@
     <div class="token-reveal">
         <p><strong>Token Generated!</strong> Copy this now, it won't be shown again:</p>
         <code>{lastGeneratedToken}</code>
-        <button onclick={() => lastGeneratedToken = ''}>Dismiss</button>
+        <div class="reveal-actions">
+            <button onclick={() => copyToClipboard(lastGeneratedToken)}>
+                <i class="fa-solid fa-copy"></i> Copy Token
+            </button>
+            <button class="secondary" onclick={() => lastGeneratedToken = ''}>Dismiss</button>
+        </div>
     </div>
 {/if}
 
@@ -147,6 +160,19 @@
         background: #332701;
         border-color: #4d3d02;
         color: #ffda6a;
+    }
+
+    .reveal-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    button.secondary {
+        background: #6c757d;
+    }
+
+    button.secondary:hover {
+        background: #5a6268;
     }
 
     code {

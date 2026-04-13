@@ -9,3 +9,4 @@ centralized logging server for rit red team
 - copy button for new token
 - loadbalancing for web requests
 - better searching
+- username password auth

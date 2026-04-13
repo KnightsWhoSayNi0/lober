@@ -48,7 +48,6 @@ services:
       - server
 
   db:
-
     image: postgres
     restart: unless-stopped
     ports:

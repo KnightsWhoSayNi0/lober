@@ -115,6 +115,7 @@ func main() {
 	router.POST("/api/c2s", NewC2)
 	router.POST("/api/scope", NewScope)
 	router.POST("/api/tokens", NewToken)
+	router.POST("/api/import/scope", ImportScopeJSON)
 
 	router.DELETE("/api/users/:name", RemoveUser)
 	router.DELETE("/api/teams/:name", RemoveTeam)
@@ -352,7 +353,7 @@ where c2s.name = $1;`
 }
 
 func GetScopeSlice(c *gin.Context) []Scope {
-	rows, err := db.Query("select scope.name from scope;")
+	rows, err := db.Query("select name, ip_addr, team from scope;")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
@@ -361,7 +362,7 @@ func GetScopeSlice(c *gin.Context) []Scope {
 	scope := make([]Scope, 0)
 	for rows.Next() {
 		var s Scope
-		if err := rows.Scan(&s.Name); err != nil {
+		if err := rows.Scan(&s.Name, &s.IPAddr, &s.Team); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return nil
 		}
@@ -374,9 +375,9 @@ func GetScopeSlice(c *gin.Context) []Scope {
 func GetScope(c *gin.Context, name string) Scope {
 	var s Scope
 	q := `
-select scope.name from scope
-where scope.name = $1;`
-	err := db.QueryRow(q, name).Scan(&s.Name)
+select name, ip_addr, team from scope
+where name = $1;`
+	err := db.QueryRow(q, name).Scan(&s.Name, &s.IPAddr, &s.Team)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
@@ -475,7 +476,7 @@ func GetMetrics(c *gin.Context) {
 			group by teams.name order by count(*) desc;`,
 		"by_scope": `
 			select scope.name, count(*) 
-			from events inner join scope on events.scope_id=scope.id
+			from events inner join scope on scope.id = ANY(events.scope_ids)
 			where events.time > now() - interval '%s'
 			group by scope.name order by count(*) desc;`,
 		"by_c2": `
@@ -507,9 +508,10 @@ func GetMetrics(c *gin.Context) {
 
 func ExportEventsCSV(c *gin.Context) {
 	q := `
-select users.username, c2s.name, scope.name, events.command, events.time
+select users.username, c2s.name, string_agg(distinct scope.name, ', '), events.command, events.time
 from events inner join users on events.user_id=users.id
-inner join c2s on events.c2_id=c2s.id inner join scope on events.scope_id=scope.id
+inner join c2s on events.c2_id=c2s.id inner join scope on scope.id = ANY(events.scope_ids)
+group by events.id, users.username, c2s.name, events.command, events.time
 order by events.time desc;
 `
 	rows, err := db.Query(q)
@@ -541,7 +543,7 @@ order by events.time desc;
 	}
 }
 
-// NEW
+// POST
 
 func NewEvent(c *gin.Context) {
 	var event Event
@@ -634,7 +636,8 @@ func NewScope(c *gin.Context) {
 		return
 	}
 
-	_, err = db.Exec("insert into scope (name) values ($1)", scope.Name)
+	_, err = db.Exec("insert into scope (name, ip_addr, team) values ($1, $2, $3)",
+		scope.Name, scope.IPAddr, scope.Team)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	} else {
@@ -642,7 +645,29 @@ func NewScope(c *gin.Context) {
 	}
 }
 
-// REMOVE
+func ImportScopeJSON(c *gin.Context) {
+	var pwnboard Pwnboard
+
+	if err := c.ShouldBindJSON(&pwnboard); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	for _, box := range pwnboard.Board {
+		for _, host := range box.Hosts {
+			team, _ := strconv.Atoi(host.Team)
+			_, err := db.Exec("insert into scope (name, ip_addr, team) values ($1, $2, $3) on conflict (ip_addr) do update set name = $1, team = $3",
+				box.Name, host.IPAddr, team)
+			if err != nil {
+				log.Printf("Error inserting/updating scope %s (%s): %v", box.Name, host.IPAddr, err)
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, pwnboard)
+}
+
+// DELETE
 
 func RemoveUser(c *gin.Context) {
 	name := c.Param("name")
